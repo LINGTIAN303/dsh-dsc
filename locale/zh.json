@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "DeepSeek App",
+    "description": "DeepSeek App 的复刻面板：左侧栏入口与中央全屏对话界面，支持深度思考、智能搜索、阅读链接、文件输入、语音输入与朗读。模型为 deepseek-flash，密钥保存在本机凭据里，请求由 Host 代理。",
+    "detail": "docs/DETAIL.md"
+  }
+}

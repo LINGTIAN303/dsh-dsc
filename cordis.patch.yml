@@ -1,0 +1,30 @@
+# dsh-deepseek-app bundle patch
+#
+# 一个 Host 行 + 一个 Client 面板：左侧栏入口图标 + 中央「DeepSeek App」面板。
+# Host 行只负责代理 DeepSeek API（密钥不进入浏览器）与会话持久化。
+#
+# 可选配置（都在这一行下）：
+#   - id: deepseek-app
+#     config:
+#       apiBaseURL: https://api.deepseek.com   # 换自建网关时改这里
+#       defaultModel: deepseek-flash           # 默认对话模型
+#       defaultThinking: true                  # 新会话是否默认开深度思考
+#       defaultSearch: true                    # 新会话是否默认开联网搜索
+#       defaultSafetyCheck: true               # 是否默认开内容安全校验
+#       searchProvider: deepseek               # 搜索渠道：deepseek / tavily / exa
+#       tavilyApiKey: tvly-xxx                 # Tavily 的 Key；不写则读环境变量 TAVILY_API_KEY
+#       exaApiKey: exa-xxx                     # Exa 的 Key；不写则读环境变量 EXA_API_KEY
+#       searchProxy: 127.0.0.1:7897            # 搜索代理；只有 Tavily 需要（其余两家可直连）
+# 不写 config 时全部使用上面的默认值。
+#
+# 搜索渠道与代理也可以在面板的「设置 → 通用设置 → 搜索渠道」里改，
+# 界面上的选择优先于这里（存在 ~/.dsh/plugins/dsh-deepseek-app/settings.json）。
+#
+# 三家渠道的差别（实测）：
+#   deepseek  复用 DeepSeek 凭据，国内直连，固定返回 10 条，带站点名与发布时间
+#   tavily    需要独立 Key；api.tavily.com 在本机 DNS 解析不出来，必须走代理
+#   exa       需要独立 Key；可直连（经代理反而 TLS 握手被断开）
+- insert:
+    - id: deepseek-app
+      name: dsh-deepseek-app
+      config: {}

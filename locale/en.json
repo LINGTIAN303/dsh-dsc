@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "DeepSeek App",
+    "description": "A replica of the DeepSeek App: a sidebar entry and a full-screen chat panel with DeepThink, smart search, link reading, file input, voice input, and read-aloud. It uses deepseek-flash, keeps the API key in this machine's credentials, and proxies every request through the Host.",
+    "detail": "docs/DETAIL.md"
+  }
+}

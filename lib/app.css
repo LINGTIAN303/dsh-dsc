@@ -1,0 +1,3953 @@
+/* ============================================================
+   DeepSeek App 面板样式
+   设计令牌沿用 DeepSeek 官方 chat-demo 的 --dsw-* 变量：宿主的
+   theme 插件已经注入了一整套同名变量（含 body[data-ds-dark-theme]），
+   所以这里只补它没有的几个 --ds-* 值，其余直接引用，暗色自动跟随。
+   ============================================================ */
+
+.dsa-root {
+  --dsa-control-xl: 44px;
+  --dsa-control-l: 40px;
+  --dsa-control-m: 36px;
+  --dsa-font-size-m: 14px;
+  /* 字号/行高阶梯取自官方运行时 --ds-font-size-* / --ds-line-height-*。
+     官方不是简单的 1.5 倍行高：正文 16/28、小字 14/25、13/23、12/21，
+     行高比偏大（中文排版需要），照抄比按比例算更准。 */
+  --dsa-font-l: 16px;
+  --dsa-line-l: 28px;
+  --dsa-font-m: 14px;
+  --dsa-line-m: 25px;
+  --dsa-font-sp: 13px;
+  --dsa-line-sp: 23px;
+  --dsa-font-s: 12px;
+  --dsa-line-s: 21px;
+  --dsa-font-xs: 10px;
+  --dsa-line-xs: 18px;
+  --dsa-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dsa-duration: 0.2s;
+  /*
+   * 代码块两层底色，取自官方暗色实测：
+   * 外层 #1b1b1c（比页面底 #151517 略亮）、banner #2c2c2e（与侧栏 hover 同色阶）。
+   * 官方不用边框分隔，靠这两层底色差表达结构；加边框反而显脏。
+   */
+  --dsa-code-block-bg: var(--dsw-alias-markdown-code-block, #1b1b1c);
+  --dsa-code-banner-bg: var(--dsw-alias-markdown-code-block-banner, #2c2c2e);
+  /* 搜索条目卡片与来源胶囊里的站点图标底色，官方实测 #353638（与侧栏 active 同色阶） */
+  --dsa-site-icon-bg: #353638;
+  /* 等宽字体栈取自官方 --ds-font-family-code（运行时实测值）。
+     比原先多几档 Ubuntu Mono / Cousine / Roboto Mono，Windows 上 Cascadia Mono 命中率更高。 */
+  --dsa-font-code: Menlo, Monaco, Consolas, 'Cascadia Mono', 'Ubuntu Mono', 'DejaVu Sans Mono',
+    'Liberation Mono', 'JetBrains Mono', 'Fira Code', Cousine, 'Roboto Mono', 'Courier New', Courier,
+    sans-serif, system-ui;
+  --dsa-list-max: 840px;
+  --dsa-list-padding: 44px;
+  --dsa-scroll: rgba(0, 0, 0, 0.08);
+  --dsa-scroll-hover: rgba(0, 0, 0, 0.15);
+  /* 对话目录导航条的背景板：官方浅色 rgba(255,255,255,.8)、暗色 rgba(21,21,23,.6) */
+  --dsa-scroll-nav-bg: rgba(255, 255, 255, 0.8);
+
+  /* 品牌蓝：取自官方 main.css 的 --dsw-static-deepseek-500 / -450。
+     不能直接用宿主的 --dsw-alias-brand-primary——它在暗色主题下被宿主改成近白色
+     （实测 rgb(249,250,251)），字标与选中态会跟着变白，看不出品牌色。
+     官方浅色用 500 档、暗色用 450 档（暗背景上要提亮），所以这里分两套。 */
+  --dsa-brand: #3964fe;
+  --dsa-brand-hover: #2f55e8;
+  --dsa-brand-soft: rgba(57, 100, 254, 0.1);
+  --dsa-brand-soft-strong: rgba(86, 134, 254, 0.18);
+
+  /* 侧栏导航项的两个语义色。
+     宿主只提供了 active-accent，hover 那档是空的（实测 getPropertyValue 返回空），
+     直接引用会让悬停毫无反馈。这里按官方色阶补齐，浅色/暗色各一套。 */
+  --dsa-nav-hover: #f1f3f5;
+  --dsa-nav-active: #e4edfd;
+
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-base);
+  font-family: var(--dsw-font-family, system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif);
+  font-size: var(--dsa-font-size-m);
+  word-break: break-word;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-ligatures: no-contextual;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dsa-root[data-dsa-dark='true'] {
+  color-scheme: dark;
+  --dsa-scroll: rgba(255, 255, 255, 0.15);
+  --dsa-scroll-hover: rgba(255, 255, 255, 0.24);
+  --dsa-scroll-nav-bg: rgba(21, 21, 23, 0.6);
+  /* 暗色品牌蓝提亮到官方的 450 档：500 档压在 #151517 背景上偏暗，字标发灰 */
+  --dsa-brand: #5686fe;
+  --dsa-brand-hover: #6f98ff;
+  /* 官方暗色：悬停 #2c2c2e、激活 #353638 */
+  --dsa-nav-hover: #2c2c2e;
+  --dsa-nav-active: #353638;
+}
+
+.dsa-root *,
+.dsa-root *::before,
+.dsa-root *::after {
+  box-sizing: border-box;
+}
+
+/* 避开原生窗口栏。
+   桌面端 Electron 用 titleBarOverlay 在 Web 层之上盖了一条高栏（本机 40px），
+   宿主的 .frame 用 padding-top 给这块留白。但绝对定位的 inset:0 对齐的是祖先的
+   padding box，而 padding 区属于 padding box —— 于是本面板从 .frame 最顶边起算，
+   把自己的顶部内容压进窗口栏里，那一带收得到点击判定却收不到真实点击。
+
+   条件必须和 .frame 的 padding-top 完全一致（宿主只在 Windows 那条规则里加 padding）：
+   用 --dsh-frame-top-clearance 会因为它在 macOS 也有值（48px）而凭空多出留白。
+   Web 端没有 data-windows-titlebar，本节整体不生效，与改动前一致。 */
+[data-windows-titlebar] .dsa-root {
+  top: var(--dsh-windows-titlebar-height, 0px);
+}
+
+/* 让出的那条带要涂成侧栏色。
+   宿主 .frame 自己就是这么做的（背景用 --dsw-specific-sidebar-fill）：
+   窗口栏带若留成根元素的 --dsw-alias-bg-base（白），会和侧栏的浅灰错开一截，
+   看起来像顶部多出一条白带。
+
+   用 box-shadow 向上投影而不是伪元素：.dsa-root 有 overflow: hidden，
+   铺在它外面的伪元素会被裁掉；元素自身的投影不受自己 overflow 裁剪。 */
+[data-windows-titlebar] .dsa-root {
+  box-shadow: 0 calc(-1 * var(--dsh-windows-titlebar-height, 0px)) 0 0
+    var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-2));
+}
+
+/* 折叠条是 fixed 定位，不随 .dsa-root 的 top 下移——
+   .dsa-root 靠 top: titlebar 高度避让窗口栏，折叠条必须单独让出同样的高度，
+   否则三枚按钮压进窗口栏，点得到判定却收不到真实点击（与根元素当年的坑相同）。 */
+[data-windows-titlebar] .dsa-collapsed-bar {
+  top: calc(var(--dsh-windows-titlebar-height, 0px) + 12px);
+}
+
+.dsa-root button {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---------------- 侧栏 ---------------- */
+
+/* 侧栏宽度取自官方运行时令牌 --sider-width: 261px（不是我按观感估的 268px）。
+   这个值在官方登录页就能读到，不用登录。
+   折叠动效对齐官方实测：0.3s cubic-bezier(0.4,0,0.2,1)。
+   用 margin-left 收进去而不是 max-width——max-width 动画时内部内容会先换行
+   再收缩，margin 推出去是纯位移，内容不重排。 */
+.dsa-sider {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 261px;
+  height: 100%;
+  min-height: 0;
+  /* 官方内容区左右各 12px（所有子项 x12、宽 236）——早先 10px 让整列内容错位 2px */
+  padding: 8px 12px 0;
+  border-right: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-2));
+  margin-left: 0;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dsa-sider-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 48px;
+  margin-bottom: 10px;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+/* 品牌标记位：官方鲸鱼 Logo 与「返回对话」控件叠在同一个格子里。
+   默认只露 Logo；鼠标悬停（或键盘聚焦到按钮）时 Logo 隐去、返回控件浮现。
+   用 grid 单格叠放而不是 absolute：父容器高度由 Logo 自然撑开，
+   切换时不会有任何跳动，也不依赖写死的像素。 */
+.dsa-brand {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.dsa-brand-logo {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsa-brand);
+  transition: opacity 0.15s var(--dsa-ease);
+}
+
+/* 悬停：Logo 让位，返回控件浮现。
+   两者都叠在同一格里，光靠 opacity 不够——透明度为 0 的元素照样接收点击，
+   而且 Logo 在 DOM 里排在按钮前面、层叠却可能压住它，导致「看不见却点得到」。
+   所以两边同时切 pointer-events：露出谁，谁才接收鼠标。 */
+.dsa-brand:hover .dsa-brand-logo,
+.dsa-brand:focus-within .dsa-brand-logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dsa-brand-back {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  outline: none;
+  opacity: 0;
+  /* 隐藏时不可点：否则未悬停时误点品牌位会直接退出面板，而用户看不到任何控件 */
+  pointer-events: none;
+  transition: opacity 0.15s var(--dsa-ease), background-color 0.15s var(--dsa-ease);
+}
+
+/* 悬停：Logo 让位，返回控件浮现 */
+.dsa-brand:hover .dsa-brand-back,
+.dsa-brand:focus-within .dsa-brand-back {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dsa-brand-back:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.dsa-brand-back:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
+}
+
+/* 字标：官方是蓝色 deepseek 小写字标，字重 600、字号 19px */
+.dsa-app-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dsa-brand);
+  font-size: 19px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.dsa-sider-top-spacer {
+  flex: 1;
+}
+
+.dsa-sider-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+  outline: none;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-sider-tool:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* 新对话：规格取自官方 ._5a8ac7a——
+   height 40px / border-radius 100px / padding 0 16px / 14px-500 /
+   背景 --dsw-alias-button-elevated-fill / 三段式阴影。
+   这是胶囊按钮，不是方角卡片；上一版误改成 12px 圆角，与官方不符。 */
+/*
+ * 「开启新对话」胶囊。
+ *
+ * margin-bottom 必须是 0：这个间距由外层 .dsa-sider-head 统一承担。
+ * 早先挂在这里，导致多选态换成「选择对话」后间距跟着消失，列表整体上抬 14px——
+ * 官方实测两种状态下分组标题都在 y=134、条目都在 y=156，位移恒为 0。
+ */
+.dsa-new-chat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 100px;
+  background: var(--dsw-alias-button-elevated-fill, var(--dsw-alias-bg-layer-1));
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  /* 供 ::after 的快捷键做定位锚点 */
+  position: relative;
+  box-shadow: 0 -2px 2px rgba(72, 104, 178, 0.04), 0 2px 2px rgba(106, 111, 117, 0.09),
+    0 1px 2px rgba(72, 104, 178, 0.08);
+  transition: box-shadow 0.3s;
+}
+
+/*
+ * 头部槽位容器：普通态装「开启新对话」，多选态装「选择对话 + 退出」。
+ *
+ * 这个容器必须常驻、且自己承担与列表之间的 14px 间距——
+ * 间距挂在这里，就不会因为内部内容替换而消失，列表位置在两种状态下保持不动。
+ */
+.dsa-sider-head {
+  flex-shrink: 0;
+  margin-bottom: 14px;
+}
+
+/* 文字节点在子元素里，所以把字重也下放到子元素，绕开 .dsa-root button 的 font:inherit 简写
+   （简写会连 font-weight 一起重置，实测按钮的 500 被压成 400）。
+   文字恒居中：官方 ._5a8ac7a 是 justify-content:center，快捷键靠绝对定位不占布局。 */
+.dsa-new-chat-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 悬停：官方实测是「内描边提亮 + 阴影增强」，背景色不变——
+   暗色内描边 rgba(255,255,255,.1) → .16，浅色是三段式阴影加深。
+   早先悬停换 background，与官方的微妙反馈不符（底色跳变太抢眼）。 */
+.dsa-new-chat:hover {
+  box-shadow: 0 4px 4px rgba(72, 104, 178, 0.04), 0 -3px 4px rgba(72, 104, 178, 0.04),
+    0 6px 6px rgba(106, 111, 117, 0.1);
+}
+
+/* 暗色：内描边 .1 → .16，外投影不变（官方实测值） */
+.dsa-root[data-dsa-dark='true'] .dsa-new-chat:hover {
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.16), 0 2px 4px rgba(106, 111, 117, 0.08);
+}
+
+.dsa-new-chat:focus-visible {
+  border-color: var(--dsa-brand);
+}
+
+/* 暗色下三段式阴影不可见，官方改成内描边 + 一层浅投影 */
+.dsa-root[data-dsa-dark='true'] .dsa-new-chat {
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(106, 111, 117, 0.08);
+}
+
+.dsa-new-chat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* 快捷键提示：官方用绝对定位伪元素挂在按钮右侧，默认 opacity:0，悬停整枚按钮才淡入。
+   绝对定位是关键——它不参与 flex 布局，所以文字始终精确居中，不会被快捷键推偏。
+   官方 ._5a8ac7a:after 取 right:11px / top:50% / translateY(-50%) / transition:opacity .3s。 */
+.dsa-new-chat {
+  justify-content: center;
+}
+
+.dsa-new-chat::after {
+  content: attr(data-kbd);
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  transform: translateY(-50%);
+  color: var(--dsw-alias-label-caption);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.dsa-new-chat:hover::after,
+.dsa-new-chat:focus-visible::after {
+  opacity: 1;
+}
+.dsa-session-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* 官方列表项占满 236px 全幅，滚动条悬浮在内容上（overlay）。
+     scrollbar-gutter: stable 会预留 ~10px 让项宽缩水，与官方不符。 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--dsa-scroll) transparent;
+}
+
+.dsa-section-title {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  /* 官方分组标题行：padding 2px 10px、12px/18px、字重 500、行总高 22px；
+     文字左缘与列表项文字（padding-left 10px）对齐 */
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-tertiary);
+  background: var(--dsw-specific-sidebar-fill, var(--dsw-alias-bg-layer-2));
+  user-select: none;
+}
+
+/* 多选入口：常驻显示（用户要求），与官方「悬停才出现」不同但更易发现 */
+/*
+ * 分组标题右侧的多选入口。
+ *
+ * 官方实测：只有「置顶」分组标题带这枚按钮（x=226、12×12、opacity:1 常驻），
+ * 普通分组标题没有。它不隐藏、不淡入——上屏就能看见。
+ *
+ * 我上一轮反向改过两次：先做成每个分组都挂（视觉噪音大），
+ * 再改成悬停才显示（把常驻需求理解错了）。两处都不对，现按官方为准：
+ * 只挂在置顶组 + 常驻。
+ */
+.dsa-section-multi {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+  transition: color var(--dsa-duration) var(--dsa-ease);
+}
+
+/* 图标本体 12px，但热区靠 padding 撑到可点尺寸——12px 的纯图标太小，手指点不准 */
+.dsa-section-multi::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.dsa-section-multi:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-section-multi:hover {
+  background: var(--dsa-nav-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* ---------------- 多选模式 ----------------
+   官方交互：分组标题悬停出「多选」入口 → 整列变成圆圈选择，
+   头部「选择对话 / 已选择 N 个对话」+ 关闭，底部「置顶 | 删除」操作条。 */
+
+/*
+ * 多选态头部：官方实测 ._3c15409 —— 236×40、padding-left 10px、
+ * justify-content: space-between；标题 16px/500 在 x=22（= 12 容器 + 10 内距）；
+ * 关闭按钮 28×28 正圆、实心底色 rgb(44,44,46)（不是描边幽灵按钮），位置 x=220。
+ *
+ * 它占用的是「开启新对话」那个槽位（y=70 / 高 40），不是另起一行——
+ * 所以列表起点不会因为这个头部而变化。
+ */
+.dsa-select-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  padding: 0 0 0 10px;
+}
+
+.dsa-select-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dsw-alias-label-primary);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 关闭按钮：官方是实心胶囊底，悬停不变描边 */
+.dsa-select-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--dsa-nav-active);
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  transition: background-color var(--dsa-duration) var(--dsa-ease),
+    color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-select-close:hover {
+  background: var(--dsa-nav-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* 选择圈：未选是灰描边圆，选中是品牌蓝实心 + 白勾 */
+/*
+ * 多选态的单行。
+ *
+ * 官方实测（a._546d736）：行内 padding 仍是 9px 6px 9px 10px，
+ * 勾选圈占 x=22 / 20×20 正圆，文字从普通态的 x=22 移到 x=52 ——
+ * 即「文字在原地右平移 30px = 勾选圈 20 + 间距 10」，不是整体挪位。
+ * 勾选圈参与了行内 flex 流，所以文字自然被推到后面；不需要额外 transform。
+ */
+/*
+ * 多选态的单行：文字「滑」到 x=52，不是瞬移。
+ *
+ * 官方实测（rAF 逐帧）：进入多选态后文字 relX 走
+ *   10 → 18 → 23 → 27 → 31 → 33 → 35 → 37 → 38 → 39 → 40
+ * 约 12 帧（≈200ms）缓出，是**布局过渡**而不是 transform 位移：
+ * 勾选圈插入 flex 流后占掉 30px，文字被挤过去，浏览器对这条自动位置变化
+ * 套用了 transition，于是看着像平滑滑动。
+ *
+ * 我方原来的问题：圆圈是条件渲染（挂载瞬间才出现）+ 文字没声明 transition，
+ * 于是表现为「切换」而不是「切入」。
+ *
+ * 做法对齐官方：
+ *   - 圆圈始终在场，宽度/外边距从 0 展开（可过渡）
+ *   - 文字与行本身声明 transition，让 flex 自动让位也走动画
+ */
+/*
+ * 行本身。
+ *
+ * 这里**不能**用 overflow: hidden：行内「更多」按钮的下拉菜单是 position:absolute
+ * 子元素、会向下超出 40px 行高，hidden 会把它整块裁掉（看不见菜单）。
+ * 早先为配合勾选圈的负 margin 加过 hidden，正是它挡住了菜单。
+ *
+ * 收起的勾选圈改用「自身不可见 + 不参与命中」处理，不再依赖父级裁剪：
+ * 负 margin 只是把它拉到行左边的空白区，视觉上并不可见（opacity:0，
+ * 且行的 padding-left 区本就是空白带，圈在那里的 20px 落在面板内边距里，
+ * 不会溢出到面板外）。
+ */
+.dsa-session-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 40px;
+  padding: 9px 6px 9px 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+
+.dsa-session-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 18px;
+  /* 让 flex 让位产生的位移也走过渡——这是「切入」而非「切换」的关键 */
+  transition: margin 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/*
+ * 勾选圈。默认宽度 0（不占位、不可见），进入多选态时展开到 20×20。
+ *
+ * 为什么不是条件渲染：条件渲染是「挂载瞬间出现」，无法过渡，
+ * 文字会被突然挤开——官方是平滑滑过去。这里让圆圈一直在场，
+ * 用 width / margin-right / opacity 三个可过渡属性控制展开。
+ * overflow:hidden 保证 0 宽时圆圈本身不被画出边界。
+ */
+/*
+ * 勾选圈与文字的位移过渡。
+ *
+ * 试过但失败的方案（记下来免得再走一遍）：
+ *   1) 圈的 width 0→20 配 gap 0→10 过渡 → 不产生中间帧。
+ *      React 在同一批次里同时改这两个值，浏览器把它们当成一个新的稳定态
+ *      一次性布局，rAF 实测第 2 帧就从 12 直接跳到 40，看着仍是「切换」。
+ *   2) 圈用 transform 平移 → 能补间，但圈自身会跟着挪位，视觉上圈从左边飞进来。
+ *
+ * 可用方案：圈**始终 20px 占位**，用 margin-left 在 -30px ↔ 0 之间过渡。
+ *   收起态 margin-left:-30px → 圈被拉出左边，净占位 = -30+20+10 = 0，文字回到原位
+ *   展开态 margin-left:0     → 净占位 = 0+20+10 = 30，文字被推右 30px
+ * margin 是布局属性且能可靠补间，两个方向都平滑。
+ */
+.dsa-select-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  margin-left: -30px;
+  border: 1.5px solid var(--dsw-alias-border-l3);
+  border-radius: 50%;
+  opacity: 0;
+  transition: margin-left 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.15s var(--dsa-ease),
+    background-color 0.15s var(--dsa-ease),
+    border-color 0.15s var(--dsa-ease);
+}
+
+/* 多选态：圈滑入占位，文字被推右 30px */
+.dsa-session-item[data-selecting='true'] .dsa-select-circle {
+  margin-left: 0;
+  opacity: 1;
+}
+
+/* 选中态：品牌色实心 + 白色对勾（官方 ds-checkbox--s 的选中态） */
+.dsa-session-item[data-checked='true'] .dsa-select-circle {
+  border-color: var(--dsa-brand);
+  background: var(--dsa-brand);
+}
+
+.dsa-session-item[data-checked='true'] .dsa-select-circle::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  margin-top: -2px;
+  border: solid #fff;
+  border-width: 0 1.8px 1.8px 0;
+  transform: rotate(45deg);
+}
+
+.dsa-session-item[data-checked='true'] .dsa-select-circle {
+  border-color: var(--dsa-brand);
+  background: var(--dsa-brand);
+}
+
+.dsa-session-item[data-checked='true'] .dsa-select-circle::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  margin-top: -2px;
+  border-left: 1.8px solid #fff;
+  border-bottom: 1.8px solid #fff;
+  transform: rotate(-45deg);
+}
+
+/* 底部操作条：置顶 | 删除 左右分布，官方布局 */
+/*
+ * 多选态底部操作条。
+ * 官方实测 ._35dde8c：236x62、flex 两等分（各 118 宽），
+ * 每枚内部 display:flex + gap:8px + 图标与文字，无背景、无边框、无分隔线；
+ * 文字 14px、颜色 rgb(129,133,140)（label-tertiary），悬停才转 primary。
+ */
+.dsa-select-actions {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  height: 62px;
+  /* 子按钮用 color: inherit（.dsa-root button 的简写），这里给出基准色 */
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-select-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-select-action:hover:not(:disabled) {
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-select-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.dsa-select-action[data-danger='true']:hover:not(:disabled) {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.dsa-select-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dsa-select-divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 20px;
+  background: var(--dsw-alias-border-l2);
+}
+
+/* ---------------- 应用内确认弹窗 ----------------
+   对齐官方确认卡（用户截图）：居中小卡、无 header 分隔、
+   标题 + 说明正文 + 右下角「取消 / 确认」，确认键按危险与否换色。 */
+
+.dsa-confirm {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  padding: 22px 24px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-2, var(--dsw-alias-bg-layer-1));
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.2), 0 12px 32px rgba(0, 0, 0, 0.2);
+  animation: dsa-confirm-in 0.16s var(--dsa-ease);
+}
+
+@keyframes dsa-confirm-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.dsa-confirm-title {
+  margin: 0;
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-confirm-body {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 21px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dsa-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dsa-confirm-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--dsa-nav-hover, var(--dsw-alias-bg-layer-1));
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.dsa-confirm-button:hover {
+  filter: brightness(1.12);
+}
+
+.dsa-confirm-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--dsa-brand);
+}
+
+.dsa-confirm-button[data-variant='primary'] {
+  background: var(--dsa-brand);
+  color: #fff;
+}
+
+.dsa-confirm-button[data-variant='danger'] {
+  background: var(--dsw-alias-state-error-primary, #f25a5a);
+  color: #fff;
+}
+
+/* 会话项规格取自官方 ._546d736：
+   height 40px / border-radius 12px / padding 9px 6px 9px 10px / 14px-22px。
+   早先按观感写成 38px + 10px 圆角，比官方紧一档，行距也偏挤。 */
+
+.dsa-session-item:hover {
+  background: var(--dsa-nav-hover);
+}
+
+/* 激活态：官方用 --dsw-specific-sidebar-nav-item-active-accent，
+   浅色是淡蓝 #e4edfd、暗色是中性 #353638。
+   早先退回 --dsw-alias-bg-layer-1，浅色下是纯白，跟侧栏底色 #f9fafb 几乎没差别，
+   选中项等于没有高亮。 */
+.dsa-session-item[data-active='true'] {
+  background: var(--dsa-nav-active);
+}
+
+.dsa-session-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 18px;
+}
+
+/*
+ * 会话行的「更多」按钮。
+ *
+ * 可见性三态（官方实测）：
+ *   普通行        按钮宽 0、完全收起（不是半透明，是真不占位）
+ *   当前选中行    opacity:1、28×28，常显
+ *   悬停任意行    opacity:1 浮现
+ * 所以「选中态常显」不是可选润色——否则当前会话想改名/置顶还得先悬停。
+ * 官方按钮 28×28、全圆角；悬停时是深灰圆形底 + 三点图标（截图 3）。
+ */
+.dsa-session-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s var(--dsa-ease), background-color 0.15s var(--dsa-ease);
+}
+
+/* 选中行常显 */
+.dsa-session-item[data-active='true'] .dsa-session-more,
+.dsa-session-item:hover .dsa-session-more,
+.dsa-session-more:focus-visible,
+.dsa-session-more[aria-expanded='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dsa-session-more:hover,
+.dsa-session-more[aria-expanded='true'] {
+  background: var(--dsa-nav-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* 会话行下拉菜单：官方是浮在行右侧的深色圆角卡（截图 2），
+   五项：重命名 / 置顶（取消置顶）/ 分享 / 多选 / 删除，删除红色。 */
+/*
+ * 行下拉菜单（由 portal 渲染到 body，fixed 定位）。
+ *
+ * 为什么必须 fixed + portal：侧栏列表 .dsa-session-list 是 overflow-y:auto
+ * 的滚动容器，行内 absolute 菜单会被裁剪——实测最后一行打开时菜单越出列表底边
+ * 74px，下面几项完全看不见。fixed 脱离裁剪链路后任何行都能完整显示。
+ * 坐标由触发按钮的 getBoundingClientRect 算出（top = 按钮底边、right = 视口右边距）。
+ */
+.dsa-row-menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 148px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-2, #2c2c2e);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  animation: dsa-menu-in 0.14s var(--dsa-ease);
+}
+
+@keyframes dsa-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.dsa-row-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa-row-menu-item:hover {
+  background: var(--dsa-nav-hover);
+}
+
+.dsa-row-menu-item[data-danger='true'] {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.dsa-row-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+/* 会话行需要 position: relative 才能让菜单相对它定位 */
+
+.dsa-session-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+}
+
+.dsa-session-action:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-rename-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--dsa-brand);
+  background: var(--dsw-specific-input-major, var(--dsw-alias-bg-layer-1));
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+/*
+ * 侧栏底部：一个整体账号控件。
+ *
+ * 官方实测 ._2afd28d：236x44、radius 12px、padding 6px 2px 6px 6px、无上边框，
+ * 左头像 32x32 正圆（x=18）、中名称（x=58）、右三点图标 16x16（x=222 靠右）。
+ * 官方这里没有分隔线，容器高度也是 44 而不是 56——早先的 border-top + 56px 都不对。
+ */
+.dsa-sider-footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 6px 0;
+}
+
+.dsa-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  padding: 6px 2px 6px 6px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-account:hover {
+  background: var(--dsa-nav-hover);
+}
+
+.dsa-account-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--dsa-nav-active);
+  color: var(--dsa-brand);
+  overflow: hidden;
+}
+
+.dsa-account-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dsa-account-caret {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+
+
+
+
+.dsa-sider-empty {
+  padding: 24px 10px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ---------------- 主区 ---------------- */
+
+.dsa-main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 顶部工具条：对齐官方收起态的浮动胶囊（边栏 / 搜索 / 新对话）。
+   展开态不渲染它；收起态随 .dsa-collapsed-bar 一起出现在主区左上。 */
+.dsa-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--dsw-alias-border-l2, rgba(255, 255, 255, 0.12));
+  border-radius: 100px;
+  background: var(--dsa-nav-active, #353638);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.dsa-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  outline: none;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-toolbar-button:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.dsa-toolbar-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--dsa-brand);
+}
+
+/* 折叠态左上角整条：对齐官方 .ca6d4be1——fixed top 12 left 16，
+   鲸鱼（27×24）+ 16px 间距 + 工具条胶囊（114×40）。
+   入场与侧栏滑出同步：0.3s 同曲线淡入下移，避免「侧栏滑走了、
+   折叠条凭空蹦出来」的两段感。 */
+.dsa-collapsed-bar {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: dsa-bar-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dsa-bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* 折叠态的鲸鱼位：官方收起态这里是纯 Logo，本插件把「回宿主主对话」的
+   退出控件叠在同一格里——悬停（或键盘聚焦）时 Logo 隐去、返回箭头浮现。
+   机制与侧栏品牌行的 .dsa-brand 完全一致：grid 单格叠放，切换零跳动；
+   两侧同时切 pointer-events，避免「看不见却点得到」。 */
+.dsa-collapsed-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+.dsa-collapsed-mark .dsa-brand-logo {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsa-brand);
+  transition: opacity 0.15s var(--dsa-ease);
+}
+
+.dsa-collapsed-mark:hover .dsa-brand-logo,
+.dsa-collapsed-mark:focus-within .dsa-brand-logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dsa-collapsed-mark .dsa-brand-back {
+  grid-area: 1 / 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s var(--dsa-ease), background-color 0.15s var(--dsa-ease);
+}
+
+.dsa-collapsed-mark:hover .dsa-brand-back,
+.dsa-collapsed-mark:focus-within .dsa-brand-back {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 折叠条的格子是 34px，品牌行的默认 30px 按钮在这里偏小，撑满格子 */
+.dsa-collapsed-mark .dsa-brand-back {
+  width: 34px;
+  height: 34px;
+}
+
+.dsa-header-spacer {
+  flex: 1;
+}
+
+.dsa-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+  outline: none;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-icon-button:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-icon-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--dsw-alias-button-primary-fill);
+}
+
+.dsa-icon-button:disabled {
+  color: var(--dsw-alias-label-caption);
+  cursor: not-allowed;
+}
+
+.dsa-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* ---------------- 对话目录导航条（官方 scroll-nav） ---------------- */
+
+/*
+ * 官方规格（main.css ._189b4a0 等，暗色实测）：
+ * 容器 34×300 固定右侧、垂直居中；背景板 34×(100%-8px) 圆角 16、blur(5px)；
+ * 每轮一行 30px，右侧对齐；短线 8×2 圆角 4，当前轮次 scale(1.5) 变品牌蓝；
+ * 悬停时面板展开到 240px 宽、显示提问全文（默认 opacity:0 不占视觉）。
+ * 窄于 768px 隐藏。
+ */
+.dsa-scroll-nav {
+  position: fixed;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  width: 34px;
+  height: 300px;
+  border-radius: 8px;
+  user-select: none;
+  transition: all 0.2s;
+}
+@media not all and (min-width: 768px) {
+  .dsa-scroll-nav {
+    display: none;
+  }
+}
+
+/* 背景板：比容器矮 8px 并在垂直向居中，作为展开面板的底 */
+.dsa-scroll-nav-bg {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: -1;
+  width: 34px;
+  height: calc(100% - 8px);
+  max-height: calc(100% - 8px);
+  border-radius: 16px;
+  background-color: var(--dsa-scroll-nav-bg);
+  backdrop-filter: blur(5px);
+}
+
+/*
+ * 面板：官方宽度恒为 240（._490b7a1），收起态只是「背景透明 + 文字 opacity:0」，
+ * 不做宽度动画——宽度恒定则右边出的短线在开合过程中纹丝不动，
+ * 若用 width 过渡，item 宽度会跟着变，观感上是整条在抖。
+ */
+.dsa-scroll-nav-panel {
+  position: absolute;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 240px;
+  max-height: 100%;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  /* 官方 --scroll-nav-page-padding: 15px 0 15px 24px，内距在容器不在每一项 */
+  padding: 15px 0 15px 24px;
+  box-sizing: border-box;
+  pointer-events: none;
+  transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.dsa-scroll-nav[data-open='true'] .dsa-scroll-nav-panel {
+  pointer-events: auto;
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: var(--dsw-shadow-lv3);
+  border-color: var(--dsw-alias-border-inverted);
+}
+
+/*
+ * 展开面板上下 32px 的渐隐遮罩（官方 ._4ce999d:before/:after）：
+ * 轮次超出面板高度时，上下边缘的条目淡出而不是硬切，暗示还有内容。
+ * 只在展开态出现——收起态面板只有一条短线，加遮罩会把它抹掉。
+ */
+.dsa-scroll-nav[data-open='true'] .dsa-scroll-nav-panel::before,
+.dsa-scroll-nav[data-open='true'] .dsa-scroll-nav-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 32px;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--dsw-alias-bg-layer-1) 20.19%, transparent 100%);
+}
+.dsa-scroll-nav[data-open='true'] .dsa-scroll-nav-panel::before {
+  top: 0;
+}
+.dsa-scroll-nav[data-open='true'] .dsa-scroll-nav-panel::after {
+  bottom: 0;
+  transform: rotate(180deg);
+}
+/* 内容没超出时两片遮罩都收掉，否则顶部第一条会被压暗 */
+.dsa-scroll-nav[data-scrollable='false'] .dsa-scroll-nav-panel::before,
+.dsa-scroll-nav[data-scrollable='false'] .dsa-scroll-nav-panel::after,
+.dsa-scroll-nav[data-at-top='true'] .dsa-scroll-nav-panel::before,
+.dsa-scroll-nav[data-at-bottom='true'] .dsa-scroll-nav-panel::after {
+  opacity: 0;
+}
+
+/* 内层列表：轮次多时自己滚，最大高度由外框的 max-height 约束 */
+.dsa-scroll-nav-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* 官方同样隐藏原生滚动条，靠外层容器裁切 */
+  scrollbar-width: none;
+}
+.dsa-scroll-nav-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* 每轮一行：固定 30px，短线始终靠右，文字从右侧溢出裁切 */
+.dsa-scroll-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: calc(100% - 6px);
+  height: 30px;
+  margin-right: 8px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+}
+.dsa-scroll-nav-item:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+/* 提问摘要：默认透明（只留短线），展开后显示 */
+.dsa-scroll-nav-text {
+  flex: 1;
+  min-width: 0;
+  margin-right: 12px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.1s, color 0.2s;
+}
+.dsa-scroll-nav[data-open='true'] .dsa-scroll-nav-text {
+  opacity: 1;
+}
+.dsa-scroll-nav-item:hover .dsa-scroll-nav-text {
+  color: var(--dsw-alias-label-primary);
+}
+
+/* 短线容器：16×20，负责把 8×2 的短线居中 */
+.dsa-scroll-nav-mark {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 20px;
+}
+
+.dsa-scroll-nav-dash {
+  width: 8px;
+  height: 2px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background-color: var(--dsw-alias-border-l4);
+  transition: background-color 0.2s, transform 0.2s;
+}
+.dsa-scroll-nav-item:hover .dsa-scroll-nav-dash {
+  background-color: var(--dsw-alias-label-primary);
+}
+
+/* 当前轮次：品牌蓝 + 加粗 + 短线放大 1.5 倍（官方 ._19d617c）。
+   用 --dsa-brand 而不是 --dsw-alias-brand-text：宿主在暗色主题下把后者改成近白色
+   rgb(249,250,251)，当前轮次会和普通轮次一个颜色，看不出「现在在哪」。 */
+.dsa-scroll-nav-item[data-active='true'] .dsa-scroll-nav-text {
+  color: var(--dsa-brand);
+  font-weight: 500;
+}
+.dsa-scroll-nav-item[data-active='true'] .dsa-scroll-nav-dash {
+  background-color: var(--dsa-brand);
+  transform: scale(1.5);
+}
+
+/* ---------------- 消息列表 ---------------- */
+
+/* 对话区与来源面板的横向容器：占满头部与输入区之间的空间 */
+.dsa-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.dsa-scroll {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* 官方消息区不显示原生滚动条，改用自绘的对话目录导航条（见 .dsa-scroll-nav）。
+     隐藏原生条而不是 scrollbar-gutter：后者会占宽，让 752 的消息列缩水。 */
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+
+  padding-bottom: 8px;
+}
+.dsa-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* 空会话：欢迎语 + composer 作为一组垂直居中（官方实测 composer 跟着问候语走，
+   底距视口 347px，不吸底）。整块用 margin auto 居中时，
+   composer 会被 flex 挤压，所以宽度必须给它撑住。 */
+.dsa-scroll-empty {
+  justify-content: center;
+}
+
+.dsa-column {
+  width: calc(var(--dsa-list-max) - 2 * var(--dsa-list-padding));
+  /* 与 .dsa-composer 的 max-width 用同一套减去量，收窄时两者位移才严格相等 */
+  max-width: calc(100% - 16px - 24px);
+  margin: 0 auto;
+  /* 顶部让开浮动工具条（约 50px），否则第一条消息会被它压住 */
+  padding-top: 52px;
+  padding-bottom: 8px;
+}
+
+.dsa-welcome {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dsa-welcome-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--dsa-list-max);
+  margin: auto;
+  /* 左右内距与 .dsa-column 的容器标尺一致（--dsa-list-padding），
+     空态与消息态 composer 宽度才能相同。 */
+  padding: 0 var(--dsa-list-padding);
+  flex-shrink: 0;
+}
+
+/* 空态里嵌进欢迎区的 composer：
+   宽度与消息列同轴（官方实测 composer 比正文宽 24px），居中，跟在问候语下方。
+   官方组中心在视口约 42% 处，flex 居中的中心是 50%——差值不大，
+   不再做偏移，避免负 margin 与问候语重叠（实测 -8vh 会盖住标题）。 */
+.dsa-welcome-composer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.dsa-greeting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 21px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* 空态标题左端的品牌标记：与侧栏品牌行同一个官方鲸鱼，只换尺寸 */
+.dsa-greeting-mark {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--dsa-brand);
+}
+
+.dsa-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 14px;
+}
+
+/* ---------------- 消息 ---------------- */
+
+.dsa-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-bottom: 16px;
+}
+
+.dsa-user[data-first='true'] {
+  padding-top: 34px;
+}
+
+.dsa-user-bubble {
+  max-width: calc(100% - 88px);
+  padding: 10px 16px;
+  border-radius: 22px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-specific-bubble, var(--dsw-alias-bg-layer-2));
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/*
+ * 用户消息的编辑态。
+ *
+ * 早先直接复用 .dsa-textarea-mirror 再靠内联样式硬改可见性——
+ * 那个类的本职是「隐藏的测高镜像」（visibility:hidden + 静态定位），
+ * 拿来当输入框会渲染成没有定位的静态块，样式全歪、也拿不到 .dsa-composer 的盒子外观。
+ * 这里给它自己的类，复用 composer 的视觉变量但布局独立。
+ */
+.dsa-user-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.dsa-user-editor-box {
+  /* 覆盖 .dsa-composer 的居中与固定宽度：编辑框跟随用户气泡那一侧铺满 */
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow: visible;
+}
+
+.dsa-user-editor-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 60px;
+  max-height: 202px;
+  margin: 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 24px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  resize: none;
+  outline: none;
+  caret-color: var(--dsa-brand);
+}
+
+.dsa-user-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dsa-user-files {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 10px;
+  max-width: 100%;
+  margin-bottom: 8px;
+}
+
+.dsa-assistant {
+  position: relative;
+  padding-bottom: 6px;
+}
+
+/* 用户消息的操作栏：默认几乎透明（保留占位，避免悬停时布局跳动）。
+   用 opacity 而不是 display:none，是为了让高度始终占住，悬停时不推挤上下文。 */
+.dsa-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin-top: 6px;
+  opacity: 0.001;
+  transition: opacity var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-user:hover .dsa-user-actions,
+.dsa-user-actions:focus-within {
+  opacity: 1;
+}
+
+/*
+ * 操作栏常显：官方 ._965abe9 / ._54866f7 都是 opacity:1，没有悬停显隐逻辑。
+ * 早先做成悬停淡入是错的——回答读完后想复制还得先悬停，白多一步。
+ * 只在流式生成中隐藏（由组件按 busy 判断，不靠 CSS）。
+ */
+.dsa-assistant-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 12px;
+  padding-bottom: 10px;
+}
+
+/*
+ * 操作按钮行：官方 ._965abe9 是 flex + gap 10px，按钮 28×28 圆形胶囊。
+ * 官方外层 ._0a3d93b 还有 left:-6px，把行左移半个按钮宽度，
+ * 让首枚图标的视觉左沿与正文对齐——图标本身带内边距，不左移会显得缩进。
+ */
+.dsa-action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  left: -6px;
+}
+
+/* 版本切换器：「‹ 2/3 ›」。数字用等宽字体，切换时不会因字宽变化而抖动。 */
+.dsa-version-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+  padding: 0 2px;
+  border-radius: 6px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-version-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-version-arrow:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-version-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.dsa-version-label {
+  min-width: 30px;
+  font-family: var(--dsa-font-code);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* 操作按钮：官方 ds-button--iconLabel 28px 圆形热区、16px 图标、#adb2b8 */
+.dsa-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
+  cursor: pointer;
+  /* 官方 .db183363 用 label-tertiary，悬停只换底色不提亮图标 */
+  transition: background-color var(--dsa-duration) var(--dsa-ease),
+    color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-action-button:hover {
+  background: var(--dsa-nav-hover);
+}
+
+/* 已生效的态度 / 朗读状态：图标转为品牌色，与未选中的中性灰区分 */
+.dsa-action-button[data-active='true'] {
+  color: var(--dsa-brand);
+}
+
+/*
+ * 「N 个网页」来源胶囊，对齐官方 .f93f59e4：
+ * fit-content + margin-top 16px + padding 4px 10px 4px 4px + 圆角 100px。
+ * 只换背景色（官方 transition:background-color .3s），不做位移。
+ */
+.dsa-sources-pill {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  box-sizing: border-box;
+  margin-top: 16px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 100px;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-sources-pill:hover {
+  background: var(--dsa-nav-hover);
+}
+
+/* 4 枚站点图标叠放：后一枚压前一枚 4px，圆形裁剪 */
+.dsa-sources-logos {
+  display: flex;
+  margin-left: 6px;
+}
+
+/*
+ * 单枚站点图标。img 铺满、cover 裁切；底下的首字母兜底在 img 之上不可见，
+ * 一旦 img 加载失败被移除，首字母就露出来——不需要额外的 onError 状态位。
+ */
+.dsa-sources-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--dsw-alias-bg-layer-2, var(--dsa-nav-active));
+  /* 用底色描边做出相邻图标之间的分隔，官方也是这个做法 */
+  box-shadow: 0 0 0 1px var(--dsw-alias-bg-base);
+  overflow: hidden;
+}
+
+.dsa-sources-logo img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dsa-sources-fallback {
+  position: absolute;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dsa-sources-logo:first-child {
+  margin-left: 0;
+}
+
+.dsa-sources-count {
+  margin-left: 6px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.dsa-action-button:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-waiting {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+}
+
+.dsa-waiting-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dsw-alias-label-dimmed, var(--dsw-alias-label-tertiary));
+  animation: dsa-fading 0.9s linear infinite;
+}
+
+.dsa-waiting-dot:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.dsa-waiting-dot:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes dsa-fading {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  33%,
+  66% {
+    opacity: 1;
+  }
+}
+
+.dsa-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.dsa-error > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* ---------------- 思考与工具时间线 ---------------- */
+
+.dsa-reply-area {
+  margin-bottom: 10px;
+}
+
+.dsa-area-title {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  margin-bottom: 2px;
+  /* 官方思考折叠头是正文色（实测 rgb(249,250,250)），不是灰色 */
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.dsa-area-title:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-area-icon {
+  display: flex;
+  margin-right: 6px;
+  color: var(--dsa-brand);
+}
+
+.dsa-area-icon[data-stopped='true'] {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-area-text {
+  margin-right: 6px;
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.dsa-shimmer {
+  color: transparent;
+  background: linear-gradient(
+      90deg,
+      var(--dsw-alias-label-secondary) 0%,
+      var(--dsw-alias-label-secondary) 40%,
+      var(--dsw-alias-label-caption, var(--dsw-alias-label-tertiary)) 50%,
+      var(--dsw-alias-label-secondary) 60%,
+      var(--dsw-alias-label-secondary) 100%
+    )
+    0 0 / 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: dsa-shimmer 2s ease-out infinite;
+}
+
+@keyframes dsa-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.dsa-step-content {
+  position: relative;
+  padding: 5px 0 5px 22px;
+}
+
+.dsa-step-content::after,
+.dsa-step-row[data-line='true']::after {
+  content: '';
+  position: absolute;
+  left: 7.5px;
+  top: 31px;
+  width: 1px;
+  height: calc(100% - 24px);
+  background: var(--dsw-alias-label-dimmed, var(--dsw-alias-border-l2));
+}
+
+.dsa-step-content[data-last='true'] {
+  padding-bottom: 0;
+}
+
+.dsa-step-content[data-last='true']::after {
+  height: calc(100% - 32px);
+}
+
+.dsa-step-dot {
+  position: absolute;
+  top: 9px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.dsa-step-dot-inner {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dsa-brand);
+  animation: dsa-pulse 1.5s linear infinite;
+}
+
+.dsa-step-dot-inner[data-inactive='true'] {
+  animation: none;
+  background: var(--dsw-alias-label-tertiary);
+}
+
+@keyframes dsa-pulse {
+  0% {
+    transform: scale(1);
+    animation-timing-function: ease-out;
+  }
+  40% {
+    transform: scale(1.3);
+    animation-timing-function: linear;
+  }
+  60% {
+    transform: scale(1.3);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.dsa-step-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  height: 34px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.dsa-step-row[data-clickable='true'] {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.dsa-step-row[data-clickable='true']::before,
+.dsa-step-row[data-active='true']::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -10px;
+  width: calc(100% + 20px);
+  height: calc(100% - 6px);
+  border-radius: 100px;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.dsa-step-row[data-clickable='true']::before {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.dsa-step-row[data-clickable='true']:hover::before {
+  opacity: 1;
+}
+
+.dsa-step-row[data-active='true']::before {
+  background: var(--dsw-alias-interactive-bg-active, var(--dsw-alias-interactive-bg-hover));
+  opacity: 1;
+}
+
+.dsa-row-icon {
+  display: flex;
+  flex-shrink: 0;
+  margin-right: 6px;
+  padding: 1px;
+}
+
+.dsa-row-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.dsa-step-row .dsa-row-svg svg {
+  width: 16px;
+  height: 16px;
+}
+
+.dsa-step-intro,
+.dsa-step-summary {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa-step-query {
+  margin-left: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  animation: dsa-fade-in 0.3s ease-in;
+}
+
+@keyframes dsa-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.dsa-site-thumbs {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.dsa-site-thumb {
+  width: 16px;
+  height: 16px;
+  margin-left: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--dsw-alias-bg-base);
+  background: var(--dsw-alias-bg-layer-2);
+  object-fit: contain;
+}
+
+.dsa-site-thumb:first-child {
+  margin-left: 0;
+}
+
+.dsa-tool-row {
+  position: relative;
+  display: flex;
+  max-width: 100%;
+  padding: 5px 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.dsa-tool-icon {
+  margin-top: 4px;
+}
+
+.dsa-tool-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 6px;
+  width: calc(100% - 30px);
+  overflow: hidden;
+}
+
+.dsa-tool-intro {
+  display: inline-block;
+  margin-right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa-page {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.dsa-page-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 20px;
+  text-decoration: underline dotted var(--dsw-alias-label-caption, var(--dsw-alias-border-l3));
+  text-underline-offset: 4px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+a.dsa-page-text:hover {
+  color: var(--dsw-alias-label-primary);
+  text-decoration-color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-page[data-failed='true'] .dsa-page-text {
+  cursor: not-allowed;
+  color: var(--dsw-alias-label-caption, var(--dsw-alias-label-tertiary));
+}
+
+.dsa-page-icon {
+  position: relative;
+  bottom: 1px;
+  display: flex;
+}
+
+.dsa-chip {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 540px;
+  height: 20px;
+  margin-right: 4px;
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+  background: var(--dsw-alias-markdown-tag, var(--dsw-alias-bg-layer-2));
+}
+
+.dsa-chip[data-failed='true'] {
+  color: var(--dsw-alias-label-caption, var(--dsw-alias-label-tertiary));
+}
+
+.dsa-chip-icon {
+  display: flex;
+  margin-right: 2px;
+}
+
+.dsa-chip-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.dsa-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------- 来源面板 ---------------- */
+
+/*
+ * 会话顶部标题行（有消息时才有）。
+ *
+ * 官方实测（视口 1603）：容器高 60px、左内距 18px、
+ * 标题块 padding 8px 12px / 14px 500 / 圆角 22px，
+ * 右侧分享按钮 34×34 全圆角靠右（x=1164）。
+ * 它和消息列同在 .dsa-main-column，右栏打开时一起被挤压。
+ */
+.dsa-session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: 60px;
+  padding: 0 18px;
+}
+
+.dsa-session-header-title {
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px 12px;
+  border-radius: 22px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dsa-session-header-share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  transition: background-color var(--dsa-duration) var(--dsa-ease),
+    color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-session-header-share:hover {
+  background: var(--dsa-nav-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/*
+ * 消息栏：竖向容纳「可滚动的消息区 + 吸底输入栏」。
+ *
+ * 这一层是右栏挤压能成立的前提：composer 与 .dsa-scroll 都在它里面，
+ * 右栏一占宽度，整条竖栏变窄，居中的 composer 与消息列同步左移。
+ * 早先把 composer 直接挂在 .dsa-body 下（与 .dsa-scroll 平级且不包一层），
+ * 面板挤压时 composer 不动、消息列变窄，两者轴线错开。
+ */
+.dsa-main-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+/*
+ * 来源面板：右侧第三栏，参与 flex 挤压（不是浮层）。
+ *
+ * 官方实测（视口 1603，面板关闭 → 打开）：
+ *   可用区宽 1254 → 864（少 390，正好是面板宽）
+ *   消息列 x 556 → 361、输入栏 x 545 → 350，均左移 195 = 390/2
+ * 即三栏布局：右栏推走会话栏右边缘，居中内容随之位移。
+ */
+.dsa-source-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 390px;
+  max-width: 45%;
+  min-height: 0;
+  border-left: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-base);
+}
+
+.dsa-source-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 60px;
+  padding: 0 14px 0 20px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+}
+
+.dsa-source-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+
+.dsa-source-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dsa-scroll) transparent;
+}
+
+.dsa-source-item {
+  display: block;
+  margin-bottom: 6px;
+  padding: 12px;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-source-item:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/*
+ * 搜索条目卡片，规格取自官方 .search-view-card（暗色实测）：
+ *   卡片 padding 12px / radius 12px
+ *   meta 行 13px/20px、gap 6px、padding-top 2px、字重 400（我原先写成 500）
+ *   站点图标 18×18、圆形（50%，我原先 4px 圆角）、底色 #353638
+ *   分隔竖线 1×12、rgba(255,255,255,.16)
+ *   标题 14px/500/22px、最多 2 行
+ *   摘要 13px/400/20px、label-tertiary、最多 2 行
+ */
+.dsa-source-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+.dsa-source-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  /* 官方站点图标是正圆，不是圆角方块 */
+  border-radius: 50%;
+  background: var(--dsa-site-icon-bg);
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.dsa-source-site {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-source-divider {
+  width: 1px;
+  height: 12px;
+  margin: 0 3px;
+  background: var(--dsw-alias-border-l3);
+}
+
+.dsa-source-date {
+  flex-shrink: 0;
+  font-weight: 400;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-source-index {
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--dsw-alias-markdown-tag, var(--dsw-alias-bg-layer-2));
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.dsa-source-headline {
+  display: -webkit-box;
+  margin-top: 6px;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.dsa-source-snippet {
+  display: -webkit-box;
+  margin-top: 6px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ---------------- 输入区 ---------------- */
+
+/* 输入区与消息列共轴：官方（对话页实测）composer 与消息正文共用同一个 840px 内容区，
+   composer 盒比正文宽 24px（两侧各 12px）。
+   所以宽度上限用 776px（752 + 2*12），与正文同轴心——
+   早先独立设 660px 并单独居中，和消息列错开，观感是「输入框比消息窄一截还偏了」。 */
+.dsa-composer-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+  /* 左右不再留内距：留了会让 composer 的可用宽度比 .dsa-column 少 32px，
+     右栏挤压时两者收缩节奏不同，位移差 2px（实测 -187 vs -185）。
+     composer 自身宽度已经用 calc 控制，这里加内距纯属叠加。 */
+  padding: 0;
+  background: var(--dsw-alias-bg-base);
+}
+
+/* 空态里嵌在欢迎区的这份：不吸底（在滚动流里跟着居中块走）、无背景分层 */
+.dsa-scroll-empty .dsa-composer-wrap {
+  background: transparent;
+}
+
+.dsa-composer-inner {
+  /* 不再额外收窄：宽度由 .dsa-composer 自己的 calc 决定，
+     这里再减 64px 会让空态与消息态宽度不同，也会破坏挤压时的位移一致性 */
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.dsa-composer {
+  display: flex;
+  flex-direction: column;
+  /*
+   * 宽度锚定与 .dsa-column 同一套容器标尺（--dsa-list-max / --dsa-list-padding），
+   * 只多出两侧各 12px：官方 composer 776、消息列 752，两者同轴心（实测）。
+   *
+   * 为什么不用 max-width:776 各管各的：右栏挤压时容器变窄，
+   * 两个「各自居中 + 各自上限」的盒子收窄节奏不同，
+   * 实测位移差了 2px（输入栏 -187、消息列 -185），轴线就错开了。
+   * 用同一个 calc 表达式，两者减掉的宽度永远相同。
+   *
+   * margin auto 不能省：父级是 align-items:center 的 flex 列，
+   * 但 composer 宽度可能触到 max-width，必须显式居中才不会贴左。
+   */
+  width: calc(var(--dsa-list-max) - 2 * var(--dsa-list-padding) + 24px);
+  max-width: calc(100% - 16px);
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 24px;
+  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin, var(--dsw-alias-border-l2));
+  background: var(--dsw-specific-input-major, var(--dsw-alias-bg-layer-1));
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.04);
+  cursor: text;
+}
+
+.dsa-composer[data-home='true'] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), 0 2px 2px rgba(72, 104, 178, 0.01),
+    0 30px 60px rgba(72, 104, 178, 0.03);
+}
+
+.dsa-root[data-dsa-dark='true'] .dsa-composer[data-home='true'] {
+  box-shadow: none;
+}
+
+.dsa-attachments {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 12px 12px 0;
+  overflow-x: auto;
+  cursor: default;
+}
+
+.dsa-attachment {
+  position: relative;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  overflow: hidden;
+  background: var(--dsw-alias-bg-skeleton, var(--dsw-alias-bg-layer-2));
+}
+
+.dsa-attachment img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dsa-attachment-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  font-size: 11px;
+  line-height: 14px;
+  text-align: center;
+  overflow: hidden;
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+}
+
+.dsa-attachment-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  color: var(--dsw-alias-label-primary-inverted, #fff);
+  background: var(--dsw-alias-button-contrast-fill, rgba(0, 0, 0, 0.5));
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-attachment:hover .dsa-attachment-remove {
+  opacity: 1;
+}
+
+.dsa-attachment-busy {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dsa-attachment-busy::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: dsa-spin 0.8s linear infinite;
+}
+
+@keyframes dsa-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dsa-textarea-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.dsa-textarea,
+.dsa-textarea-mirror {
+  display: block;
+  width: 100%;
+  min-height: 60px;
+  margin: 0;
+  padding: 12px 12px 0 16px;
+  border: none;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  word-break: break-word;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.dsa-textarea {
+  position: absolute;
+  height: 100%;
+  resize: none;
+  outline: none;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  caret-color: var(--dsa-brand);
+}
+
+.dsa-textarea::placeholder {
+  color: var(--dsw-alias-label-caption, var(--dsw-alias-label-tertiary));
+  user-select: none;
+}
+
+.dsa-textarea-mirror {
+  visibility: hidden;
+  pointer-events: none;
+  max-height: 336px;
+}
+
+.dsa-function-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  padding: 10px 12px;
+}
+
+.dsa-toggles {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dsa-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 18px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  /* 官方开关文字 13px/500、行高 24px（实测 ds-toggle-button），图标 14px */
+  line-height: 24px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dsa-toggle:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* 选中态：官方用 ghost-active 系列——
+   背景 --dsw-alias-button-ghost-active-fill (#283142)、
+   边框 --dsw-alias-button-ghost-active-border (#4868b2)、
+   文字 --dsw-alias-brand-text (#679efe)。
+   早先自造 rgba 蓝，与官方的两档深浅对不上。 */
+.dsa-toggle[data-selected='true'] {
+  background: var(--dsw-alias-button-ghost-active-fill, var(--dsa-brand-soft));
+  color: var(--dsw-alias-brand-text, var(--dsa-brand));
+  border-color: var(--dsw-alias-button-ghost-active-border, var(--dsa-brand));
+}
+
+.dsa-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dsa-composer-right {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* 录音中的按钮：外圈光晕呼吸、内圈实心、图标转白（对齐官方 VoiceButton） */
+.dsa-mic-active {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.dsa-mic-halo {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--dsa-brand);
+  opacity: 0.2;
+  animation: dsa-halo-enter 0.15s ease-out both, dsa-halo-breath 1.8s ease-in-out 0.15s infinite;
+}
+
+.dsa-mic-core {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--dsa-brand);
+  opacity: 0.75;
+  animation: dsa-core-enter 0.2s ease-out 0.14s both;
+}
+
+.dsa-mic-glyph {
+  position: relative;
+  display: flex;
+  color: #fff;
+  animation: dsa-fade-in 0.1s ease-out 0.26s both;
+}
+
+@keyframes dsa-halo-enter {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 0.2; }
+}
+
+@keyframes dsa-halo-breath {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.1; }
+}
+
+@keyframes dsa-core-enter {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 0.75; }
+}
+
+@keyframes dsa-fade-in {
+  from { opacity: 0; }
+}
+
+/* 转写中转圈 */
+.dsa-transcribing {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dsw-alias-border-l2);
+  border-top-color: var(--dsw-alias-label-tertiary);
+  animation: dsa-spin 0.8s linear infinite;
+}
+.dsa-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  margin-left: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  /* 官方发送钮（ds-button--primary）背景是品牌蓝 #5686fe，白图标。
+     宿主的 --dsw-alias-button-primary-fill 在暗色下是 #f9fafb（近白）——
+     白按钮压在深灰输入区里直接消失，必须钉成品牌蓝。 */
+  background: var(--dsa-brand);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dsa-send:hover:not(:disabled) {
+  background: var(--dsa-brand-hover);
+}
+
+/* 官方禁用态是同色蓝 + opacity 0.4（实测 ds-button--primary），
+   不是换灰色——换灰会让「可发送时变蓝、禁用时变灰」出现色相跳变。 */
+.dsa-send:disabled {
+  background: var(--dsa-brand);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dsa-send[data-mode='stop'] {
+  background: var(--dsw-alias-button-contrast-fill, var(--dsw-alias-label-secondary));
+}
+
+.dsa-caveat {
+  width: 100%;
+  padding: 6px 0;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--dsw-alias-label-tertiary);
+  user-select: none;
+}
+
+/* 官方空态没有免责声明（有消息后它才贴在 composer 下方）。
+   data-home 由 Composer 在空会话时标在 wrap 上。 */
+.dsa-composer-wrap[data-home='true'] .dsa-caveat {
+  display: none;
+}
+
+/* 录音频谱：覆盖输入框正文区，纵向居中，与官方 chat-demo 一致 */
+.dsa-spectrum {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  left: 16px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 36px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.dsa-spectrum-bar {
+  flex-shrink: 0;
+  width: 2px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--dsw-alias-button-info-hover, var(--dsw-alias-brand-primary));
+  transform-origin: center;
+  will-change: transform;
+}
+
+.dsa-recording-tip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  text-align: center;
+  pointer-events: none;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ---------------- 设置弹窗 ---------------- */
+
+.dsa-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  /* 官方遮罩用 --dsw-alias-bg-mask-1：浅色 rgba(0,0,0,.24)、暗色 rgba(0,0,0,.5)。
+     早先写死 0.4，浅色下偏黑、暗色下偏淡，两头都不对。 */
+  background: var(--dsw-alias-bg-mask-1, rgba(0, 0, 0, 0.4));
+}
+
+.dsa-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 880px;
+  height: min(640px, 100%);
+  /* 官方弹窗圆角 --dsl-modal-content-border-radius: 24px */
+  border-radius: 24px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1, var(--dsw-alias-bg-base));
+  box-shadow: var(--dsw-shadow-lv3, 0 0 1px rgba(0, 0, 0, 0.2), 0 12px 32px rgba(0, 0, 0, 0.16));
+  overflow: hidden;
+}
+
+.dsa-dialog-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 56px;
+  padding: 0 12px 0 24px;
+}
+
+.dsa-dialog-title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 官方设置是左右分栏：左列分区导航（约 200px），右列内容，中间一条分隔线 */
+.dsa-dialog-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.dsa-dialog-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  width: 200px;
+  padding: 0 12px 20px;
+  overflow-y: auto;
+}
+
+.dsa-dialog-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.dsa-dialog-nav-item:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.dsa-dialog-nav-item[data-active='true'] {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+  font-weight: 500;
+}
+
+.dsa-dialog-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.dsa-dialog-body {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 4px 24px 24px;
+  overflow-y: auto;
+}
+
+/* 设置里的横向条目：左标题右控件，对齐官方的「键 - 值」行 */
+.dsa-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+}
+
+.dsa-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.dsa-row-title {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-row-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-row-value {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dsa-about p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dsa-field {
+  margin-bottom: 20px;
+}
+
+.dsa-field:last-child {
+  margin-bottom: 0;
+}
+
+.dsa-field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.dsa-input {
+  display: block;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: 10px;
+  background: var(--dsw-specific-input-major, var(--dsw-alias-bg-base));
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.dsa-input:focus {
+  border-color: var(--dsa-brand);
+}
+
+.dsa-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* 提示后紧跟下一个字段时要有间隔。
+   字段本身只有 margin-bottom，前一个字段的提示会把后面的标签顶到零间距
+   （实测「搜索代理」标签与上一行提示间距 0，两行字贴在一起）。 */
+.dsa-hint + .dsa-field,
+.dsa-hint + .dsa-field-label {
+  margin-top: 16px;
+}
+
+.dsa-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-2, var(--dsw-alias-bg-skeleton));
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dsa-status[data-tone='ok'] {
+  color: var(--dsw-alias-state-success-primary, var(--dsw-alias-label-primary));
+}
+
+.dsa-status[data-tone='error'] {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.dsa-dialog-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.dsa-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 100px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dsa-button:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/*
+ * 主按钮。颜色不能取 --dsw-alias-button-primary-fill：宿主在暗色主题下把它
+ * 改成近白色 rgb(249,250,251)，而这里文字是白的——按钮会变成一块纯白、
+ * 文字完全看不见（截图中「保存」就是这个症状）。
+ * 品牌蓝 --dsa-brand 是插件自己钉住的（暗色是提亮过的 450 档），填色安全。
+ */
+.dsa-button[data-variant='primary'] {
+  border-color: transparent;
+  background: var(--dsa-brand);
+  color: #fff;
+}
+
+.dsa-button[data-variant='primary']:hover:not(:disabled) {
+  background: var(--dsa-brand-hover);
+}
+
+/* 危险操作：删除类按钮用红色描边，与官方「删除所有对话」一致 */
+.dsa-button[data-variant='danger'] {
+  border-color: var(--dsw-alias-state-error-primary);
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.dsa-button[data-variant='danger']:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent);
+}
+
+.dsa-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------------- 搜索对话 ---------------- */
+
+.dsa-search-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  max-height: min(520px, 100%);
+  /* 与设置弹窗同一档：官方 --dsl-modal-content-border-radius: 24px */
+  border-radius: 24px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1, var(--dsw-alias-bg-base));
+  box-shadow: var(--dsw-shadow-lv3, 0 0 1px rgba(0, 0, 0, 0.2), 0 12px 32px rgba(0, 0, 0, 0.16));
+  overflow: hidden;
+}
+
+.dsa-search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  height: 56px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+}
+
+.dsa-search-field-icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.dsa-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: none;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.dsa-search-results {
+  flex: 1;
+  min-height: 0;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.dsa-search-result {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa-search-result:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.dsa-search-result-title {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------------- 底部用户菜单 ---------------- */
+
+.dsa-user-menu {
+  position: absolute;
+  left: 4px;
+  bottom: calc(100% + 6px);
+  z-index: 30;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-layer-1, var(--dsw-alias-bg-base));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.dsa-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa-user-menu-item:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.dsa-user-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--dsw-alias-label-secondary);
+}
+
+
+
+/* ---------------- 提示 ---------------- */
+
+.dsa-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 950;
+  max-width: min(560px, calc(100% - 48px));
+  padding: 10px 16px;
+  /* 官方 --dsl-toast-border-radius: 12px */
+  border-radius: 12px;
+  background: var(--dsw-alias-toast-bg, var(--dsw-alias-label-primary));
+  color: var(--dsw-alias-label-primary-foreground, #fff);
+  font-size: 13px;
+  line-height: 20px;
+  transform: translateX(-50%);
+  animation: dsa-toast-in 0.18s var(--dsa-ease);
+}
+
+@keyframes dsa-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}
+
+/* ---------------- Markdown ---------------- */
+
+.ds-md {
+  font-size: 16px;
+  line-height: 28px;
+  color: var(--dsw-alias-label-primary);
+  overflow-wrap: anywhere;
+}
+
+.ds-md > :first-child {
+  margin-top: 0;
+}
+
+.ds-md > :last-child {
+  margin-bottom: 0;
+}
+
+.ds-md-p {
+  margin: 0 0 12px;
+}
+
+.ds-md-h1,
+.ds-md-h2,
+.ds-md-h3,
+.ds-md-h4,
+.ds-md-h5,
+.ds-md-h6 {
+  margin: 20px 0 10px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.ds-md-h1 {
+  font-size: 24px;
+}
+
+.ds-md-h2 {
+  font-size: 22px;
+}
+
+.ds-md-h3 {
+  font-size: 20px;
+}
+
+.ds-md-h4 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ds-md-h5,
+.ds-md-h6 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ds-md-ul,
+.ds-md-ol {
+  margin: 0 0 12px;
+  padding-left: 26px;
+}
+
+.ds-md-ul {
+  list-style: disc;
+}
+
+.ds-md-ol {
+  list-style: decimal;
+}
+
+.ds-md-li {
+  margin: 4px 0;
+}
+
+.ds-md-li > .ds-md-ul,
+.ds-md-li > .ds-md-ol {
+  margin: 4px 0 0;
+}
+
+.ds-md-quote {
+  margin: 0 0 12px;
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--dsw-alias-border-l3);
+  color: var(--dsw-alias-label-secondary);
+}
+
+.ds-md-hr {
+  height: 1px;
+  margin: 20px 0;
+  border: none;
+  background: var(--dsw-alias-border-l2);
+}
+
+.ds-md-link {
+  color: var(--dsa-brand);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.ds-md-link:hover {
+  text-decoration: underline;
+}
+
+.ds-md-image {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.ds-md-code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--dsw-alias-markdown-inline-code, var(--dsw-alias-bg-layer-2));
+  font-family: var(--dsa-font-code);
+  font-size: 0.875em;
+}
+
+/*
+ * 代码块，规格取自官方 .md-code-block（暗色实测）：
+ *   外层 radius 12px、背景 #1b1b1c、margin 16px 0 11px、无边框
+ *   banner 高 40px、背景 #2c2c2e、上方 12px 圆角、无分隔线、内距 6px
+ *   pre padding 16px
+ * 我原先加了 1px 边框、banner 只有 30px 且有 border-bottom、按钮 24px/6px 圆角，
+ * 三处都不对：官方是无边框 + 明显的深浅两层底色对比。
+ */
+.ds-md-code-block {
+  position: relative;
+  margin: 16px 0 11px;
+  border-radius: 12px;
+  background: var(--dsa-code-block-bg);
+  overflow: hidden;
+}
+
+/*
+ * 代码块标题栏：左侧语言名，右侧「复制 / 下载」。
+ * 没有语言名时也保留这条 bar，否则按钮无处安放。
+ * 官方 .md-code-block-banner 是 flex + space-between + align-items:center、padding 6px。
+ */
+.ds-md-code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 40px;
+  padding: 6px;
+  border-radius: 12px 12px 0 0;
+  background: var(--dsa-code-banner-bg);
+}
+
+/* 官方语言名 12px、label-primary、等宽字体 */
+.ds-md-code-lang {
+  min-width: 0;
+  padding-left: 6px;
+  overflow: hidden;
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsa-font-code);
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ds-md-code-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* 官方按钮：高 28px、padding 0 10px、gap 3px、13px、全圆角（capsule） */
+.ds-md-code-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 4096px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  /* 不能用 font: inherit——简写会把 font-size 一起重置成继承值，
+     后面的 13px 被它覆盖（实测仍显示 16px）。逐项写。 */
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--dsa-duration) var(--dsa-ease),
+    color var(--dsa-duration) var(--dsa-ease);
+}
+
+.ds-md-code-copy svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/*
+ * 文字在子元素里，字号必须下放到这一层。
+ * 按钮自身的 font-size 管不到 span——span 会从按钮继承，但消息层级的
+ * 字号规则（.ds-md 的 16px）会先胜出，实测按钮仍显示 16px。
+ */
+.ds-md-code-copy-label {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.ds-md-code-copy:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.ds-md-code-copy[data-copied] {
+  color: var(--dsw-alias-brand-text);
+}
+
+/*
+ * 代码块语法高亮配色。
+ *
+ * 取值全部来自官方 chat.deepseek.com 的 .md-code-block（暗色实测，逐 token 采样）：
+ *   punctuation  rgb(227,234,242)  property rgb(108,184,230)
+ *   operator     rgb(233,174,126)  string   rgb(145,208,118)
+ *   boolean      rgb(230,211,122)
+ * 官方 token 类名与 Prism 完全一致，所以这组规则能原样套用。
+ *
+ * 官方只对上面五类有独立配色，其余（keyword / number / comment 等）沿用正文前景色，
+ * 这里保持同样克制：不自行扩展配色，避免五颜六色偏离官方观感。
+ */
+.ds-md-code-block .token.punctuation {
+  color: rgb(227, 234, 242);
+}
+
+.ds-md-code-block .token.property {
+  color: rgb(108, 184, 230);
+}
+
+.ds-md-code-block .token.operator {
+  color: rgb(233, 174, 126);
+}
+
+.ds-md-code-block .token.string {
+  color: rgb(145, 208, 118);
+}
+
+.ds-md-code-block .token.boolean {
+  color: rgb(230, 211, 122);
+}
+
+/* 注释压暗一档，否则与正文同亮会抢读（官方未单独配色，这里取 label-tertiary） */
+.ds-md-code-block .token.comment {
+  color: var(--dsw-alias-label-tertiary);
+  font-style: normal;
+}
+
+.ds-md-code-copy:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 1px;
+}
+
+.ds-md-code-block pre {
+  margin: 0;
+  /* 官方 pre 内距 16px（实测），比原先的 12px 更舒展 */
+  padding: 16px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.ds-md-code-block code {
+  font-family: var(--dsa-font-code);
+  font-size: 13px;
+  line-height: 22px;
+  white-space: pre;
+}
+
+/* 引用预览卡：悬停角标 300ms 后出现，替代「点开侧栏才能看来源」。
+   用 fixed 定位是因为消息区是滚动容器，absolute 会被 overflow 裁掉。 */
+.dsa-citation-card {
+  position: fixed;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(360px, calc(100vw - 24px));
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1, var(--dsw-alias-bg-base));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.dsa-citation-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dsa-citation-card-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--dsa-brand);
+  /* 底色是品牌蓝，文字必须显式取白：--dsw-alias-label-primary-inverted 的语义是
+     「配浅色底的深色字」，深色主题下它是深灰，压在蓝底上对比度不够。 */
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.dsa-citation-card-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.dsa-citation-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 500;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.dsa-citation-card-host {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dsa-citation-card-snippet {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.dsa-citation-card-open {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-brand-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color var(--dsa-duration) var(--dsa-ease);
+}
+
+.dsa-citation-card-open:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.ds-md-table-wrap {
+  margin: 0 0 12px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.ds-md-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 25px;
+}
+
+.ds-md-table th,
+.ds-md-table td {
+  padding: 8px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  text-align: left;
+}
+
+.ds-md-table th {
+  font-weight: 500;
+  background: var(--dsw-alias-bg-layer-2, var(--dsw-alias-bg-skeleton));
+}
+
+/* 引用角标 */
+.ds-md-citation {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  margin: 0 2px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 5px;
+  background: var(--dsw-alias-markdown-citation, var(--dsw-alias-bg-layer-2));
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  line-height: 17px;
+  font-weight: 500;
+  vertical-align: 1px;
+  cursor: pointer;
+}
+
+.ds-md-citation:hover {
+  background: var(--dsw-alias-interactive-bg-hover-accent, var(--dsw-alias-border-l2));
+  color: var(--dsw-alias-label-primary);
+}
+
+.ds-md-loading::after {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--dsa-brand);
+  animation: dsa-caret 1s steps(2) infinite;
+}
+
+@keyframes dsa-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 思考区的 Markdown 用更小的字号与更淡的颜色 */
+.dsa-step-content .ds-md {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dsa-step-content .ds-md-code-block code {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* ---------------- 桌面端折叠态（对齐官方「收起边栏」） ----------------
+   折叠后侧栏滑出（margin-left 动画，见 .dsa-sider 的过渡声明）；
+   主区左上由 .dsa-collapsed-bar 提供入口。展开态主区没有任何常驻工具条。 */
+
+.dsa-root[data-dsa-collapsed='true'] .dsa-sider {
+  margin-left: -261px;
+  opacity: 0;
+  pointer-events: none;
+  /* 位移结束后再隐藏，避免半程时内容露在折叠条下面 */
+  visibility: hidden;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s 0.3s;
+}
+
+/* 折叠态没有侧栏，内容列用整幅宽度重新居中（官方折叠后正文居中于剩余空间）。
+   不改 padding-top：折叠条是 fixed 定位不占布局，52px 在两个态下都够用——
+   折叠瞬间改 padding 会让居中的 composer 纵向瞬跳（实测 +32px 下移），
+   官方交互只有左平移。max-width 的变化由下方 transition 平滑。 */
+.dsa-root[data-dsa-collapsed='true'] .dsa-column,
+.dsa-root[data-dsa-collapsed='true'] .dsa-welcome-inner {
+  max-width: 840px;
+}
+
+/* 内容列宽度跟随侧栏折叠平滑过渡（与 .dsa-sider 的 margin 同曲线同时长），
+   让居中重算连续进行，不再有竖直方向的瞬跳。 */
+.dsa-column,
+.dsa-welcome-inner {
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------------- 移动端（< 768px，与官方断点一致） ----------------
+   窄屏不再隐藏侧栏，而是把它变成抽屉：顶栏菜单按钮打开，
+   点遮罩或选中会话后关闭。直接 display:none 会让手机上没有切换会话的入口。 */
+
+.dsa-root[data-dsa-mobile='true'] .dsa-sider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 800;
+  width: 300px;
+  max-width: calc(100vw - 48px);
+  border-right: 1px solid var(--dsw-alias-border-l1);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.16);
+  /* 收起时移出屏幕并隐藏，避免抽屉边缘露在左侧 */
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 0.22s var(--dsa-ease), visibility 0.22s var(--dsa-ease);
+}
+
+.dsa-root[data-dsa-mobile='true'][data-dsa-drawer='true'] .dsa-sider {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.dsa-drawer-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 799;
+  /* 与设置弹窗同一个遮罩令牌，避免两处深浅不一 */
+  background: var(--dsw-alias-bg-mask-1, rgba(0, 0, 0, 0.4));
+  animation: dsa-mask-in 0.22s var(--dsa-ease);
+}
+
+@keyframes dsa-mask-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 抽屉内的会话列表要能自己滚，否则会话多了会顶出屏幕 */
+.dsa-root[data-dsa-mobile='true'] .dsa-session-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 移动端工具条：贴左并缩小留白，避免在小屏上占掉太多首屏 */
+.dsa-root[data-dsa-mobile='true'] .dsa-toolbar {
+  top: 8px;
+  left: 10px;
+  gap: 0;
+  padding: 3px;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-toolbar-button {
+  width: 34px;
+  height: 34px;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-icon-button {
+  width: 38px;
+  height: 38px;
+}
+
+/* 移动端设置弹窗：官方在小屏上是整屏铺开，左右分栏改为上下 */
+.dsa-root[data-dsa-mobile='true'] .dsa-dialog {
+  max-width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-dialog-layout {
+  flex-direction: column;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-dialog-nav {
+  flex-direction: row;
+  gap: 4px;
+  width: 100%;
+  padding: 0 12px 8px;
+  /* 四个分区平分宽度而不是横向滚动：
+     滚动条在触屏上几乎看不见，超出的那个「服务协议」看起来就是被裁掉了。 */
+  overflow: visible;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-dialog-nav-item {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  gap: 6px;
+  padding: 0 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 窄屏下图标让位给文字：四个分区平分后每格只剩百来像素，图标会把字挤掉 */
+.dsa-root[data-dsa-mobile='true'] .dsa-dialog-nav-icon {
+  display: none;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-dialog-body {
+  padding: 8px 16px 24px;
+}
+
+/* 移动端留白收紧，正文可读宽度优先 */
+.dsa-root[data-dsa-mobile='true'] {
+  --dsa-list-padding: 16px;
+  --dsa-list-max: 100%;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-greeting {
+  gap: 8px;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-greeting-mark svg {
+  width: 26px;
+  height: auto;
+}
+
+/* 触摸设备上悬停不可用：消息操作栏常显，否则手机上永远点不到复制/朗读 */
+@media (hover: none) {
+  .dsa-assistant-actions {
+    opacity: 1;
+  }
+
+  .dsa-user-actions {
+    opacity: 1;
+  }
+
+  .dsa-session-action {
+    width: auto;
+    opacity: 1;
+  }
+}
+
+/* 移动端输入区：工具行放不下时换行，而不是让按钮互相压住。
+   390px 宽下两个开关各约 102px，加上右侧三个图标必然超出，
+   不换行会出现「智能搜索」压在麦克风上的重叠（实测重叠 68px）。 */
+.dsa-root[data-dsa-mobile='true'] .dsa-function-row {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-toggles {
+  flex: 1 1 100%;
+  min-width: 0;
+  gap: 8px;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-toggle {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+}
+
+/* 开关文字在窄屏可能被截断，允许省略号而不是撑破 */
+.dsa-root[data-dsa-mobile='true'] .dsa-toggle span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-composer-right {
+  margin-left: auto;
+}
+
+/* 移动端输入框：字号不小于 16px，否则 iOS 聚焦时会自动放大页面 */
+.dsa-root[data-dsa-mobile='true'] .dsa-textarea,
+.dsa-root[data-dsa-mobile='true'] .dsa-textarea-mirror {
+  font-size: 16px;
+}
+
+/* 移动端输入框：外层 .dsa-composer-wrap 已经有 16px 左右留白，
+   这里不要再加 margin，否则左右会叠成 56/40 的不对称。 */
+.dsa-root[data-dsa-mobile='true'] .dsa-composer {
+  margin: 0 0 8px;
+}
+
+/* 移动端正文：左右留白收紧但对称，避免角标贴边把句号挤到下一行 */
+.dsa-root[data-dsa-mobile='true'] .dsa-column {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* 移动端版本切换器：箭头与数字间距收紧，别占掉半行 */
+.dsa-root[data-dsa-mobile='true'] .dsa-version-switcher {
+  gap: 0;
+}
+
+.dsa-root[data-dsa-mobile='true'] .dsa-version-arrow {
+  width: 20px;
+}
+
+/* 窄屏：宿主右栏或窗口过窄时压缩 */
+
+@media (max-width: 860px) {
+  .dsa-root {
+    --dsa-list-padding: 28px;
+  }
+
+  .dsa-sider {
+    width: 220px;
+  }
+}
+
+@media (max-width: 720px) {
+  .dsa-root {
+    --dsa-list-padding: 20px;
+  }
+
+  .dsa-sider {
+    width: 200px;
+  }
+}
+
+/* 640px 以下不再隐藏侧栏——移动端靠抽屉提供入口（见上方 data-dsa-mobile 规则） */
+@media (max-width: 640px) {
+  .dsa-root {
+    --dsa-list-padding: 16px;
+  }
+
+  .dsa-greeting {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 500;
+  }
+
+  /* 来源面板改为整屏覆盖 */
+  .dsa-source-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    width: auto;
+    max-width: none;
+    border-left: none;
+  }
+}
