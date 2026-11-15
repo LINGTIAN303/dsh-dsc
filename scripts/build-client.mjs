@@ -35,7 +35,7 @@ const body = parts
 const safeCss = css.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${')
 
 const output = `window.__ModuleLoader__.load({
-  id: 'dsh-deepseek-app',
+  id: 'dsh-deepseek-chat',
   factory(require) {
 ${body}
 

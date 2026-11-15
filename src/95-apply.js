@@ -13,21 +13,21 @@ function apply(ctx) {
     setLocale(id)
   }
   syncLocale()
-  ctx.effect(() => ctx.on('locale/change', syncLocale), 'deepseek-app: locale')
+  ctx.effect(() => ctx.on('locale/change', syncLocale), 'deepseek-chat: locale')
 
   // 面板样式：挂一份 <style>，卸载时移除
   ctx.effect(() => {
     const style = document.createElement('style')
-    style.setAttribute('data-plugin', 'dsh-deepseek-app')
+    style.setAttribute('data-plugin', 'dsh-deepseek-chat')
     style.textContent = STYLES
     document.head.appendChild(style)
     return () => style.remove()
-  }, 'deepseek-app: styles')
+  }, 'deepseek-chat: styles')
 
   // 中央面板：key 与侧栏图标 id 一致，侧栏点它时中央就渲染这个组件。
   // layout 由闭包传入：面板里的「返回对话」需要它切换中央面板。
   ctx.slots.inject('main', () =>
-    ctx.slots.register({ name: 'main', key: 'deepseek-app' }, (props) =>
+    ctx.slots.register({ name: 'main', key: 'deepseek-chat' }, (props) =>
       h(DeepSeekPanel, { ...props, layout: ctx.layout }),
     ),
   )
@@ -37,7 +37,7 @@ function apply(ctx) {
     ctx.slots.register(
       {
         name: 'sidebar.panellist',
-        id: 'deepseek-app',
+        id: 'deepseek-chat',
         order: 8,
         label: () => T('panelLabel'),
       },

@@ -1,5 +1,5 @@
 {
-  "name": "dsh-deepseek-app",
+  "name": "dsh-deepseek-chat",
   "version": "0.1.0",
   "private": true,
   "description": "复刻 DeepSeek 对话界面（对齐基准为官网页版）：联网搜索、深度思考、阅读链接、文件输入、语音输入与朗读。",
@@ -19,6 +19,7 @@
     "lib/app.css",
     "lib/config.js",
     "lib/credential.js",
+    "lib/data-dir.js",
     "lib/deepseek-api.js",
     "lib/llm-api.js",
     "lib/search.js",

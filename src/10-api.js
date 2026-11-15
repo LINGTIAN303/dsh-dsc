@@ -4,7 +4,7 @@
  * 桌面端页面以 file:// 加载，绝对路径会指向文件系统根目录，请求根本到不了 Host；
  * 浏览器端的页面可能挂在子路径下，也只有相对 baseURI 才正确。
  */
-const BASE = new URL('api/deepseek-app', document.baseURI)
+const BASE = new URL('api/deepseek-chat', document.baseURI)
 
 /** 拼出一条完整路由；path 里可以带子路径，如 files.upload */
 const url = (path) => new URL(path, `${BASE.href}/`).href

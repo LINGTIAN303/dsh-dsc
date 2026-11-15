@@ -16,7 +16,7 @@ flowchart LR
     Panel --> Store
   end
   subgraph Host["Host（lib/index.js）"]
-    Routes["/api/deepseek-app/*<br/>精确 Fetch 路由"]
+    Routes["/api/deepseek-chat/*<br/>精确 Fetch 路由"]
     Cred["凭据解析"]
     Proxy["DeepSeek 代理"]
     Store2["会话 JSON 存储"]
@@ -27,7 +27,7 @@ flowchart LR
   Proxy -- "x-api-key / x-dsh-auth-token" --> API["api.deepseek.com"]
 ```
 
-浏览器只与 `/api/deepseek-app/*` 通信，从不接触 API Key。
+浏览器只与 `/api/deepseek-chat/*` 通信，从不接触 API Key。
 
 ## 为什么密钥必须留在 Host
 
@@ -99,7 +99,7 @@ node .tmp/build-client.mjs
 ## 已知限制
 
 - 只有 `deepseek-flash` 支持这套服务端工具。
-- 会话存成单个 JSON 文件（`~/.dsh/plugins/dsh-deepseek-app/sessions.json`），超过 32 MiB 会拒绝写入。条目多时应拆分存储。
+- 会话存成单个 JSON 文件（`~/.dsh/plugins/dsh-deepseek-chat/sessions.json`），超过 32 MiB 会拒绝写入。条目多时应拆分存储。
 - 录音在本地重采样成 16 kHz 单声道 WAV：ASR 只接受 16 位 PCM WAV 或 Ogg Opus，浏览器录出来的通常是 webm/opus。
 - 插件的 Markdown 不做代码高亮与公式渲染，只保留原始代码文本。
 
@@ -223,7 +223,7 @@ node .tmp/build-client.mjs
   ├─ composeSystemPrompt(稳定层) + buildDynamicContext(动态层)
   │    动态层按来源分流工具表：池模式写 web_search / read_url
   └─ buildMessages → { provider, model, search: true, toolLoop: true, system, messages }
-        ↓ POST /api/deepseek-app/pool.messages
+        ↓ POST /api/deepseek-chat/pool.messages
 Host lib/llm-api.js → handlePoolMessages
   ├─ options.tools = [web_search, read_url]   ← 标准 ToolSchema
   ├─ 循环最多 4 轮：
@@ -379,7 +379,7 @@ plugin_manager set_plugin target=include:<entryId> enabled=true
 ```
 
 两次返回 `application: applied` 即表示 Host 侧已重新执行 `apply`。
-本插件的 entryId 是 `include:deepseek-app`（在 `plugin_manager list_plugins` 里搜 `dsh-deepseek-app`）。
+本插件的 entryId 是 `include:deepseek-chat`（在 `plugin_manager list_plugins` 里搜 `dsh-deepseek-chat`）。
 
 ## 搜索渠道：三家可选
 
@@ -411,7 +411,7 @@ plugin_manager set_plugin target=include:<entryId> enabled=true
 
 ### 搜索设置的存储位置
 
-搜索渠道与代理存在 `~/.dsh/plugins/dsh-deepseek-app/settings.json`（`lib/settings-store.js`），**界面上的选择优先于插件配置**——否则用户在设置里改完不生效，「设置」就是假的。
+搜索渠道与代理存在 `~/.dsh/plugins/dsh-deepseek-chat/settings.json`（`lib/settings-store.js`），**界面上的选择优先于插件配置**——否则用户在设置里改完不生效，「设置」就是假的。
 
 不放凭据服务的原因：凭据服务是给密钥用的，渠道选择和代理地址不是密钥，混进去会让「凭据」这个概念失焦。密钥仍然只走凭据服务，这个文件不碰任何密钥。
 
@@ -848,7 +848,7 @@ Tavily 必须走代理，而代理侧偶发掐断连接，报 `Client network so
 **排查提示**：如果看到列表里同名会话出现两次，先查 `id` 而不是怀疑投影。
 本插件的会话数据里确实可能有多条**标题相同**的记录（不同 id），
 那是用户真的建了两个同名对话，属于正常数据，不是渲染 bug。
-用 `GET /api/deepseek-app/sessions` 比对 `id` 去重计数即可确认
+用 `GET /api/deepseek-chat/sessions` 比对 `id` 去重计数即可确认
 （`dupIds` 为空就说明没有重复渲染）。
 
 ### 进入多选态是「切入」不是「切换」
@@ -1041,7 +1041,7 @@ const paths = [...el.closest('div').querySelectorAll('svg path')].map(p => p.get
 
 站点图标取自 `cdn.deepseek.com/site-icons/<host>`，但**不能由页面直连**——
 面板 CSP 会拦成 `TypeError: Failed to fetch`。走 Host 的同源代理
-`/api/deepseek-app/site-icon/<host>`，Host 侧再转发（含 8s 超时、按 `content-type`
+`/api/deepseek-chat/site-icon/<host>`，Host 侧再转发（含 8s 超时、按 `content-type`
 挡掉 HTML 错误页、256 条内存 LRU）。取不到时回 404，前端 `img` 的 `onError`
 把节点摘掉，露出首字母兜底。
 

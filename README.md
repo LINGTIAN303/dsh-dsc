@@ -1,11 +1,11 @@
-# dsh-deepseek-app
+# dsh-deepseek-chat
 
 复刻 DeepSeek 对话界面的 DeepSeek Harness 插件：左侧栏一个鲸鱼图标入口，点开是一屏全屏对话面板——侧栏会话列表、欢迎语、消息流、底部输入框。
 
 **当前对齐的是官网页版（chat.deepseek.com）。** 侧栏 261px、消息列 752px、输入框 776px、「开启新对话」的 `Ctrl + J` 提示、空态 composer 跟随问候语居中，全部取自网页版实测。界面本身是竖屏的对话布局，但它不是 DeepSeek App（iOS / Android）的复刻——**App 版的移植还没开始**。
 
 <p align="center">
-  <img src="icon.svg" width="96" height="96" alt="DeepSeek App">
+  <img src="icon.svg" width="96" height="96" alt="DeepSeek Chat">
 </p>
 
 ## 特性
@@ -30,8 +30,8 @@
 ### 从源码安装
 
 ```bash
-git clone https://github.com/LINGTIAN303/dsh-deepseek-app.git
-cd dsh-deepseek-app
+git clone https://github.com/LINGTIAN303/dsh-deepseek-chat.git
+cd dsh-deepseek-chat
 pnpm install
 ```
 
@@ -43,6 +43,15 @@ pnpm add link:<仓库绝对路径>
 ```
 
 然后重启 DSH，或从「插件」面板里重新加载。左侧栏出现鲸鱼图标即安装成功。
+
+### 从旧版 `dsh-deepseek-app` 升级
+
+插件随仓库改名为 `dsh-deepseek-chat`，包名、插件 id、路由前缀、数据目录都跟着变了。升级时要做两件事：
+
+1. **替换 profile 里的注册**：把 `~/.dsh/profiles/desktop/package.json` 里的 `dsh-deepseek-app` 改成 `dsh-deepseek-chat`（或重新执行上面的 `pnpm add link:...`）。
+2. **数据会自动迁移**：首次加载时插件会把 `~/.dsh/plugins/dsh-deepseek-app/` 下的 `sessions.json` 与 `settings.json` 复制到新目录。**旧目录保留不删**，方便回滚；确认无误后可手动删除。
+
+迁移是幂等的：新目录已有同名文件时不会覆盖（以新数据为准）。
 
 ### 构建
 
@@ -56,7 +65,7 @@ node --check lib/client.js
 改了 Host 侧（`lib/*.js`）后**必须重载插件**——Client 有热更新，Host 没有：
 
 ```
-插件 → 已安装 → dsh-deepseek-app → 停用 → 启用
+插件 → 已安装 → dsh-deepseek-chat → 停用 → 启用
 ```
 
 ## 配置
@@ -67,7 +76,7 @@ node --check lib/client.js
 2. 已登录的 DeepSeek 账号。
 3. 环境变量 `DEEPSEEK_API_KEY`。
 
-浏览器只与 Host 的 `/api/deepseek-app/*` 通信，密钥不会出现在页面代码里。设置里的「校验」用一次免费的 `GET /models` 确认 Key 有效。
+浏览器只与 Host 的 `/api/deepseek-chat/*` 通信，密钥不会出现在页面代码里。设置里的「校验」用一次免费的 `GET /models` 确认 Key 有效。
 
 ### 插件配置
 
@@ -85,7 +94,7 @@ exaApiKey: exa-xxx                     # 不写则读环境变量 EXA_API_KEY
 searchProxy: 127.0.0.1:7897            # 只有 Tavily 需要
 ```
 
-搜索渠道也可以在面板「设置 → 通用设置 → 搜索渠道」里改，**界面上的选择优先**（存在 `~/.dsh/plugins/dsh-deepseek-app/settings.json`）。
+搜索渠道也可以在面板「设置 → 通用设置 → 搜索渠道」里改，**界面上的选择优先**（存在 `~/.dsh/plugins/dsh-deepseek-chat/settings.json`）。
 
 ### 三家搜索渠道的差别（实测）
 
@@ -97,7 +106,7 @@ searchProxy: 127.0.0.1:7897            # 只有 Tavily 需要
 
 ## 会话存在哪
 
-`~/.dsh/plugins/dsh-deepseek-app/sessions.json`。换浏览器、清缓存都不会丢。
+`~/.dsh/plugins/dsh-deepseek-chat/sessions.json`。换浏览器、清缓存都不会丢。
 
 ## 计费
 
@@ -150,13 +159,13 @@ docs/
 
 插件有两个半侧，各自有硬约束：
 
-**Host** 走 `ctx.connection.fetch.register({ path, methods, requestBody: 'buffered', fetch })`，挂在 `/api/deepseek-app/*` 下。密钥只在这里出现。
+**Host** 走 `ctx.connection.fetch.register({ path, methods, requestBody: 'buffered', fetch })`，挂在 `/api/deepseek-chat/*` 下。密钥只在这里出现。
 
 **Client** 必须是一份自包含产物——DSH 的模块加载器不接受同步 `require` 相对路径的 chunk，所以 `src/` 的分片只是为了可读，产物永远是单个文件（`window.__ModuleLoader__.load`）。
 
 ### 官方样式真值
 
-`docs/details/架构/deepseek-app.md` 记录了从官方 `main.css` 与真机实测得到的每一处数值（侧栏 261px、消息列 752px、输入框 776px、多选圈位移 30px……），改界面前先查那里，别凭眼估。
+`docs/details/架构/deepseek-chat.md` 记录了从官方 `main.css` 与真机实测得到的每一处数值（侧栏 261px、消息列 752px、输入框 776px、多选圈位移 30px……），改界面前先查那里，别凭眼估。
 
 ## 路线图
 

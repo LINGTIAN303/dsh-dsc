@@ -28,11 +28,11 @@
 2. 已登录的 DeepSeek 账号。
 3. 环境变量 `DEEPSEEK_API_KEY`。
 
-浏览器只与 Host 的 `/api/deepseek-app` 通信，密钥不会出现在页面里。设置里的「校验」用一次免费的 `GET /models` 确认 Key 有效。
+浏览器只与 Host 的 `/api/deepseek-chat` 通信，密钥不会出现在页面里。设置里的「校验」用一次免费的 `GET /models` 确认 Key 有效。
 
 ## 会话存在哪
 
-会话历史写在 Host 的 `~/.dsh/plugins/dsh-deepseek-app/sessions.json`，换浏览器或清缓存都不会丢。
+会话历史写在 Host 的 `~/.dsh/plugins/dsh-deepseek-chat/sessions.json`，换浏览器或清缓存都不会丢。
 
 ## 计费
 

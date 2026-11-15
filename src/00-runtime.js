@@ -67,7 +67,7 @@ function useOutsideClick(ref, active, onClose) {
 }
 
 /** 记住用户选的麦克风：只存 deviceId，不涉及隐私内容 */
-const MIC_STORAGE_KEY = 'dsh-deepseek-app:mic'
+const MIC_STORAGE_KEY = 'dsh-deepseek-chat:mic'
 
 function readPreferredMic() {
   try {

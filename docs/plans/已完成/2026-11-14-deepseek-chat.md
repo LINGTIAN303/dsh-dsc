@@ -32,7 +32,7 @@ status: 已完成
 
 ## 交付
 
-包在 `E:\dsh-deepseek-app`，已通过 `plugin_manager install_bundle` 装入 `desktop` profile，`application: applied`，无警告。
+包在 `E:\dsh-deepseek-chat`，已通过 `plugin_manager install_bundle` 装入 `desktop` profile，`application: applied`，无警告。
 
 ## 验收
 
