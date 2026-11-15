@@ -26,5 +26,5 @@
 #   exa       需要独立 Key；可直连（经代理反而 TLS 握手被断开）
 - insert:
     - id: deepseek-chat
-      name: dsh-deepseek-chat
+      name: dsh-dsc
       config: {}

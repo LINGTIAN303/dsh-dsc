@@ -27,6 +27,15 @@
 - DeepSeek Harness v0.2.2 及以上（Desktop 版）。
 - Node.js `>= 22.13.0`。
 
+### 从 npm 安装（推荐）
+
+```bash
+cd ~/.dsh/profiles/desktop
+pnpm add dsh-dsc
+```
+
+然后重启 DSH，或从「插件」面板里重新加载。左侧栏出现鲸鱼图标即安装成功。
+
 ### 从源码安装
 
 ```bash
@@ -42,16 +51,15 @@ cd ~/.dsh/profiles/desktop
 pnpm add link:<仓库绝对路径>
 ```
 
-然后重启 DSH，或从「插件」面板里重新加载。左侧栏出现鲸鱼图标即安装成功。
+### 从旧版升级
 
-### 从旧版 `dsh-deepseek-app` 升级
+插件曾用名 `dsh-deepseek-app`、`dsh-deepseek-chat`，现在发布名是 `dsh-dsc`。升级时：
 
-插件随仓库改名为 `dsh-deepseek-chat`，包名、插件 id、路由前缀、数据目录都跟着变了。升级时要做两件事：
+1. **替换 profile 里的注册**：删掉旧条目，重新 `pnpm add dsh-dsc`（或 `pnpm add link:...`）。
+2. **数据自动迁移**：首次加载时插件会从旧目录复制 `sessions.json` 与 `settings.json`，旧目录保留不删，方便回滚。
+3. **数据目录名固定为 `dsh-deepseek-chat`**：与包名解耦。以后无论包名怎么改，你的会话都原地不动，不需要再迁移。
 
-1. **替换 profile 里的注册**：把 `~/.dsh/profiles/desktop/package.json` 里的 `dsh-deepseek-app` 改成 `dsh-deepseek-chat`（或重新执行上面的 `pnpm add link:...`）。
-2. **数据会自动迁移**：首次加载时插件会把 `~/.dsh/plugins/dsh-deepseek-app/` 下的 `sessions.json` 与 `settings.json` 复制到新目录。**旧目录保留不删**，方便回滚；确认无误后可手动删除。
-
-迁移是幂等的：新目录已有同名文件时不会覆盖（以新数据为准）。
+迁移是幂等的：目标已有同名文件时不覆盖（以新数据为准）。
 
 ### 构建
 
@@ -65,7 +73,7 @@ node --check lib/client.js
 改了 Host 侧（`lib/*.js`）后**必须重载插件**——Client 有热更新，Host 没有：
 
 ```
-插件 → 已安装 → dsh-deepseek-chat → 停用 → 启用
+插件 → 已安装 → dsh-dsc → 停用 → 启用
 ```
 
 ## 配置
