@@ -1,18 +1,18 @@
 {
   "name": "dsh-dsc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek 对话界面复刻（对齐官网页版 chat.deepseek.com）：联网搜索、深度思考、阅读链接、文件输入、语音输入与朗读。DSH 插件。",
   "type": "module",
   "icon": "icon.svg",
   "license": "MIT",
   "author": "LINGTIAN303",
-  "homepage": "https://github.com/LINGTIAN303/dsh-deepseek-chat#readme",
+  "homepage": "https://github.com/LINGTIAN303/dsh-dsc#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LINGTIAN303/dsh-deepseek-chat.git"
+    "url": "git+https://github.com/LINGTIAN303/dsh-dsc.git"
   },
   "bugs": {
-    "url": "https://github.com/LINGTIAN303/dsh-deepseek-chat/issues"
+    "url": "https://github.com/LINGTIAN303/dsh-dsc/issues"
   },
   "keywords": [
     "dsh",

@@ -39,7 +39,7 @@ pnpm add dsh-dsc
 ### 从源码安装
 
 ```bash
-git clone https://github.com/LINGTIAN303/dsh-deepseek-chat.git
+git clone https://github.com/LINGTIAN303/dsh-dsc.git
 cd dsh-deepseek-chat
 pnpm install
 ```
