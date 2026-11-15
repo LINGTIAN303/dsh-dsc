@@ -18,7 +18,8 @@ function apply(ctx) {
   // 面板样式：挂一份 <style>，卸载时移除
   ctx.effect(() => {
     const style = document.createElement('style')
-    style.setAttribute('data-plugin', 'dsh-deepseek-chat')
+    // __PLUGIN_ID__ 构建时替换成真实包名，见 scripts/build-client.mjs
+    style.setAttribute('data-plugin', '__PLUGIN_ID__')
     style.textContent = STYLES
     document.head.appendChild(style)
     return () => style.remove()

@@ -24,6 +24,13 @@ const parts = readdirSync(srcDir)
 if (parts.length === 0) throw new Error('src/ 里没有可分片的客户端源码')
 
 const css = readFileSync(cssFile, 'utf8')
+/*
+ * 客户端模块 id 必须等于 package.json 的 name——宿主按包名匹配 client 模块，
+ * 对不上就不激活：表现为「Host 半侧正常、侧栏入口不出现」。
+ * 所以这里从 package.json 读，不写死：这个包改过三次名，
+ * 写死过一次就漏改过一次，代价是整块 UI 静默消失。
+ */
+const packageName = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).name
 const body = parts
   .map((name) => {
     const text = readFileSync(join(srcDir, name), 'utf8').replace(/\s+$/, '')
@@ -31,13 +38,19 @@ const body = parts
   })
   .join('\n\n')
 
+/*
+ * 源码里凡是写 __PLUGIN_ID__ 的地方，构建时替换成真实包名。
+ * 这样 src/ 不需要知道包名，改名时也只有一个真值源（package.json）。
+ */
+const withId = (text) => text.replaceAll('__PLUGIN_ID__', packageName)
+
 // CSS 里出现反引号或 ${ 会破坏模板字符串，统一转义
 const safeCss = css.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${')
 
 const output = `window.__ModuleLoader__.load({
-  id: 'dsh-deepseek-chat',
+  id: '${packageName}',
   factory(require) {
-${body}
+${withId(body)}
 
 /* ===== lib/app.css（构建时内联） ===== */
 const STYLES = \`${safeCss}\`
