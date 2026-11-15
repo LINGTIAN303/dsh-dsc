@@ -4,7 +4,7 @@
 
 | 状态 | 文档 | 摘要 | 链接 |
 | --- | --- | --- | --- |
-| 已完成 | DeepSeek App 面板 | 复刻官方 App 竖屏界面的 DSH 插件：侧栏入口 + 中央面板，接入 deepseek-flash 全家桶 API（联网搜索、深度思考、阅读链接、文件输入、ASR、TTS、内容安全、会话标题）。Host 代理所有请求，密钥留在本机。 | [2026-11-14-deepseek-app.md](plans/已完成/2026-11-14-deepseek-app.md) |
+| 已完成 | DeepSeek App 面板 | 复刻官网页版（chat.deepseek.com）对话界面的 DSH 插件：侧栏入口 + 中央面板，接入 deepseek-flash 全家桶 API（联网搜索、深度思考、阅读链接、文件输入、ASR、TTS、内容安全、会话标题）。Host 代理所有请求，密钥留在本机。App 版移植未开始。 | [2026-11-14-deepseek-app.md](plans/已完成/2026-11-14-deepseek-app.md) |
 
 ## 详情
 

@@ -1,5 +1,9 @@
 # DeepSeek App 面板：架构与实现
 
+> **对齐基准**：本文所有「官方」数值均取自**官网页版 chat.deepseek.com**（含其 `main.css` 与真机 DOM 实测）。
+> DeepSeek App（iOS / Android）的界面移植**尚未开始**——文中出现的「移动端」一律指网页版在 `< 768px` 下的响应式表现（抽屉侧栏等），不是 App 版。
+> 插件名沿用了 `DeepSeek App`，是指目标形态，不代表已完成 App 复刻。
+
 ## 两个半侧
 
 插件是一个 bundle，两个半侧分工明确：

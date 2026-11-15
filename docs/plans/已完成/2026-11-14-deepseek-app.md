@@ -8,6 +8,12 @@ status: 已完成
 
 复刻 DeepSeek App 的对话体验作为 DSH 插件：左侧栏一个入口，点开后是一个全屏的竖屏 App 界面（不是横版网页布局），视觉与交互对齐官方 App。能力覆盖文章《DeepSeek 发布全家桶应用 API》列出的全部项。
 
+## 实际执行的对齐基准
+
+**落地时以官网页版 chat.deepseek.com 为准，不是 App。** 所有可测量的数值（侧栏 261px、消息列 752px、输入框 776px、`Ctrl + J` 提示、空态 composer 底距 347px）都取自网页版 DOM 与其 `main.css`；App 只有 iOS / Android 两端，本机无法做像素级实测。
+
+因此本文"已完成"指的是：**对话能力全覆盖 + 网页版视觉与交互对齐**。App 版（导航模型、页面栈转场、触屏手势）的移植**未开始**，不能按本文状态认为 App 已复刻。
+
 ## 依据
 
 - 公众号原文：[DeepSeek 发布全家桶应用 API](https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ%3D%3D&mid=2247485910&idx=1&sn=529f50ba3b37e39319dad1faf7a122cf)

@@ -2,7 +2,7 @@
   "name": "dsh-deepseek-app",
   "version": "0.1.0",
   "private": true,
-  "description": "DeepSeek App 复刻面板：联网搜索、深度思考、阅读链接、文件输入、语音输入与朗读，界面与交互对齐官方 App。",
+  "description": "复刻 DeepSeek 对话界面（对齐基准为官网页版）：联网搜索、深度思考、阅读链接、文件输入、语音输入与朗读。",
   "type": "module",
   "icon": "icon.svg",
   "license": "MIT",
